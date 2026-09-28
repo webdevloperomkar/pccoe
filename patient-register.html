@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Registration</title>
+
+    <link rel="stylesheet" href="patient-style.css">
+</head>
+
+<body>
+
+<div class="page">
+
+    <!-- LEFT SIDE -->
+    <div class="left-section">
+
+        <div class="logo">
+            ✚ <span>HealSure</span>
+            <small>Electronic Health Record System</small>
+        </div>
+
+        <div class="welcome">
+            <h1>Join Our Patient<br>Network</h1>
+
+            <p>
+                Create your personal portal account to check test results,
+                monitor existing symptoms, schedule appointments, and
+                coordinate care safely.
+            </p>
+        </div>
+
+        <div class="bottom-text">
+            Trusted Care.<br>
+            Through Technology.
+        </div>
+
+        <div class="circle circle1"></div>
+        <div class="circle circle2"></div>
+
+    </div>
+
+
+    <!-- RIGHT SIDE -->
+    <div class="right-section">
+
+        <div class="form-card">
+
+            <div class="plus-icon">+</div>
+
+            <h2>Patient Registration</h2>
+
+            <p class="subtitle">
+                Fill in your details to set up your account
+            </p>
+
+            <form id="registerForm">
+
+                <input
+                    type="email"
+                    id="email"
+                    placeholder="Email Address"
+                    required
+                >
+
+                <input
+                    type="password"
+                    id="password"
+                    placeholder="Password"
+                    required
+                >
+
+                <input
+                    type="password"
+                    id="confirmPassword"
+                    placeholder="Confirm Password"
+                    required
+                >
+
+                <button type="submit">
+                    Complete Registration
+                </button>
+
+            </form>
+
+            <p class="account-text">
+                Already have an account?
+                <a href="patient-login.html">Login here</a>
+            </p>
+
+            <a class="back-home" href="index.html">
+                Back to Home
+            </a>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+document.getElementById("registerForm").addEventListener("submit", async function(event) {
+    event.preventDefault();
+
+    let email = document.getElementById("email").value;
+    let password = document.getElementById("password").value;
+    let confirmPassword = document.getElementById("confirmPassword").value;
+
+    if (password !== confirmPassword) {
+        alert("Passwords do not match!");
+        return;
+    }
+
+    try {
+        const response = await fetch("http://localhost:5000/api/patient/register", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, password })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            alert(data.message);
+            window.location.href = "patient-login.html";
+        } else {
+            alert(data.message);
+        }
+    } catch (error) {
+        console.error("Error:", error);
+        alert("Unable to connect to the server.");
+    }
+});
+</script>
+
+</body>
+</html>

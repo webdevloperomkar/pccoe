@@ -1,0 +1,656 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+}
+
+
+/* REGISTER + LOGIN PAGE */
+
+.page {
+    min-height: 100vh;
+    display: flex;
+    background: #eef4fa;
+}
+
+
+/* LEFT SIDE */
+
+.left-section {
+    width: 55%;
+    min-height: 100vh;
+
+    background: #7db5ff;
+
+    color: #18365f;
+
+    padding: 45px;
+
+    position: relative;
+
+    overflow: hidden;
+}
+
+
+/* LOGO */
+
+.logo {
+    font-size: 25px;
+    font-weight: bold;
+
+    position: relative;
+    z-index: 2;
+}
+
+.logo span {
+    margin-left: 5px;
+}
+
+.logo small {
+    display: block;
+
+    font-size: 10px;
+
+    margin-left: 22px;
+
+    font-weight: normal;
+}
+
+
+/* WELCOME */
+
+.welcome {
+    position: absolute;
+
+    left: 45px;
+
+    top: 42%;
+
+    z-index: 2;
+}
+
+.welcome h1 {
+    font-size: 25px;
+
+    line-height: 1.2;
+
+    margin-bottom: 20px;
+}
+
+.welcome p {
+    width: 400px;
+
+    font-size: 13px;
+
+    line-height: 1.6;
+}
+
+
+/* BOTTOM TEXT */
+
+.bottom-text {
+    position: absolute;
+
+    left: 45px;
+    bottom: 35px;
+
+    font-size: 20px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-style: italic;
+
+    z-index: 2;
+}
+
+
+/* CIRCLES */
+
+.circle {
+    position: absolute;
+
+    border-radius: 70%;
+
+    background: rgba(255,255,255,0.08);
+}
+
+.circle1 {
+    width: 100px;
+    height: 100px;
+
+    bottom: -130px;
+    left: -80px;
+}
+
+.circle2 {
+    width: 380px;
+    height: 380px;
+
+    bottom: -120px;
+    right: -80px;
+}
+
+
+/* RIGHT SIDE */
+
+.right-section {
+    width: 45%;
+
+    min-height: 100vh;
+
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    padding: 30px;
+}
+
+
+/* FORM CARD */
+
+.form-card {
+    width: 380px;
+
+    background: white;
+
+    padding: 35px;
+
+    border-radius: 12px;
+
+    box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+
+    text-align: center;
+}
+
+
+/* PLUS */
+
+.plus-icon {
+    width: 30px;
+    height: 30px;
+
+    background: #e4f3ff;
+
+    color: #087fba;
+
+    border-radius: 50%;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    margin: auto;
+
+    margin-bottom: 12px;
+
+    font-weight: bold;
+}
+
+
+.form-card h2 {
+    color: #264a7d;
+
+    font-size: 20px;
+
+    margin-bottom: 8px;
+}
+
+
+.subtitle {
+    color: #999;
+
+    font-size: 11px;
+
+    margin-bottom: 20px;
+}
+
+
+/* INPUT */
+
+.form-card input {
+    width: 100%;
+
+    height: 40px;
+
+    border: 1px solid #ddd;
+
+    border-radius: 5px;
+
+    padding: 0 12px;
+
+    margin-bottom: 12px;
+
+    outline: none;
+}
+
+.form-card input:focus {
+    border-color: #087fba;
+}
+
+
+/* BUTTON */
+
+.form-card button {
+    width: 100%;
+
+    height: 40px;
+
+    border: none;
+
+    border-radius: 5px;
+
+    background: #087fba;
+
+    color: white;
+
+    cursor: pointer;
+
+    font-size: 12px;
+
+    font-weight: bold;
+}
+
+.form-card button:hover {
+    background: #066a9b;
+}
+
+
+/* LOGIN / REGISTER TEXT */
+
+.account-text {
+    font-size: 10px;
+
+    color: #777;
+
+    margin-top: 18px;
+}
+
+.account-text a {
+    color: #087fba;
+
+    text-decoration: none;
+
+    font-weight: bold;
+}
+
+.back-home {
+    display: block;
+
+    margin-top: 12px;
+
+    color: #777;
+
+    font-size: 10px;
+
+    text-decoration: none;
+}
+
+
+/* BOOK APPOINTMENT PAGE */
+
+.appointment-page {
+    min-height: 100vh;
+
+    display: flex;
+
+    background: #f7f5f0;
+}
+
+
+/* SIDEBAR */
+
+.sidebar {
+    width: 250px;
+
+    min-height: 100vh;
+
+    background: #72aaf0;
+
+    border-radius: 0 30px 30px 0;
+
+    padding: 35px 22px;
+
+    position: relative;
+
+    color: #18365f;
+}
+
+.sidebar h3 {
+    font-size: 14px;
+
+    letter-spacing: 2px;
+}
+
+.line {
+    width: 40px;
+
+    height: 2px;
+
+    background: #18365f;
+
+    margin: 12px 0 35px;
+}
+
+
+.sidebar a {
+    display: block;
+
+    padding: 14px 15px;
+
+    margin-bottom: 8px;
+
+    color: #18365f;
+
+    text-decoration: none;
+
+    border-radius: 10px;
+
+    font-size: 20px;
+}
+
+.sidebar a.active {
+    background: rgba(255,255,255,0.18);
+}
+
+
+/* TOKEN */
+
+.token-box {
+    position: absolute;
+
+    bottom: 40px;
+
+    left: 22px;
+    right: 22px;
+
+    padding: 22px 10px;
+
+    border: 1px solid rgba(24,54,95,0.3);
+
+    border-radius: 12px;
+
+    text-align: center;
+}
+
+.token-box h4 {
+    font-size: 13px;
+
+    margin-bottom: 12px;
+}
+
+.token-box p {
+    font-size: 11px;
+
+    margin-bottom: 8px;
+}
+
+.token-box strong {
+    font-size: 24px;
+
+    color: #075b9d;
+}
+
+
+/* MAIN */
+
+.appointment-content {
+    flex: 1;
+
+    padding: 55px 8%;
+}
+
+.appointment-content > h1 {
+    text-align: center;
+
+    color: #18365f;
+
+    font-family: Georgia, serif;
+
+    font-size: 34px;
+
+    margin-bottom: 40px;
+}
+
+
+/* APPOINTMENT CARD */
+
+.appointment-card {
+    max-width: 750px;
+
+    margin: auto;
+
+    background: white;
+
+    border-radius: 20px;
+
+    padding: 40px;
+
+    box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+}
+
+.appointment-card h2 {
+    font-family: sans-serif, serif;
+
+    color: #18365f;
+
+    font-size: 20px;
+
+    margin-bottom: 28px;
+}
+
+
+/* ROW */
+
+.row {
+    display: flex;
+
+    gap: 15px;
+
+    margin-bottom: 20px;
+}
+
+.input-group {
+    flex: 1;
+}
+
+.input-group.name {
+    flex: 4;
+}
+
+.input-group.age {
+    flex: 1;
+}
+
+
+/* LABEL */
+
+.input-group label {
+    display: block;
+
+    color: #555;
+
+    font-size: 13px;
+
+    margin-bottom: 8px;
+}
+
+
+/* INPUTS */
+
+.input-group input,
+.input-group select,
+.input-group textarea {
+
+    width: 100%;
+
+    border: 1px solid #ddd;
+
+    border-radius: 10px;
+
+    padding: 13px;
+
+    font-size: 13px;
+
+    outline: none;
+
+    background: white;
+}
+
+.input-group input:focus,
+.input-group select:focus,
+.input-group textarea:focus {
+    border-color: #72aaf0;
+}
+
+
+/* TEXTAREA */
+
+.input-group textarea {
+    height: 110px;
+
+    resize: vertical;
+}
+
+
+/* APPOINTMENT BUTTON */
+
+.appointment-button {
+    display: block;
+
+    margin-left: auto;
+
+    margin-top: 28px;
+
+    padding: 14px 35px;
+
+    border: none;
+
+    border-radius: 30px;
+
+    background: #72aaf0;
+
+    color: white;
+
+    font-size: 14px;
+
+    font-weight: bold;
+
+    cursor: pointer;
+}
+
+.appointment-button:hover {
+    background: #4e91e3;
+}
+
+
+/* MOBILE RESPONSIVE */
+
+@media (max-width: 768px) {
+
+    .page {
+        flex-direction: column;
+    }
+
+    .left-section {
+        width: 100%;
+
+        min-height: 300px;
+
+        padding: 25px;
+    }
+
+    .welcome {
+        position: relative;
+
+        top: auto;
+        left: auto;
+
+        margin-top: 80px;
+    }
+
+    .welcome h1 {
+        font-size: 25px;
+    }
+
+    .welcome p {
+        width: 100%;
+
+        font-size: 11px;
+    }
+
+    .bottom-text {
+        display: none;
+    }
+
+    .right-section {
+        width: 100%;
+
+        min-height: 500px;
+
+        padding: 25px;
+    }
+
+    .form-card {
+        width: 100%;
+
+        max-width: 380px;
+    }
+
+
+    /* APPOINTMENT */
+
+    .appointment-page {
+        flex-direction: column;
+    }
+
+    .sidebar {
+        width: 100%;
+
+        min-height: auto;
+
+        border-radius: 0;
+
+        padding: 20px;
+    }
+
+    .sidebar a {
+        display: inline-block;
+
+        width: auto;
+    }
+
+    .token-box {
+        position: relative;
+
+        left: auto;
+        right: auto;
+        bottom: auto;
+
+        margin-top: 15px;
+    }
+
+    .appointment-content {
+        padding: 30px 15px;
+    }
+
+    .appointment-content > h1 {
+        font-size: 27px;
+    }
+
+    .appointment-card {
+        padding: 25px 18px;
+    }
+
+    .row {
+        flex-direction: column;
+
+        gap: 15px;
+    }
+
+}

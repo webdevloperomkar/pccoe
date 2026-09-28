@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HealSure - Doctor Registration</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <link rel="stylesheet" href="doctor-registration.css">
+</head>
+<body>
+
+  <div class="container">
+    <!-- Left Hero Section -->
+    <div class="left-section">
+      <div class="brand">
+        <div class="brand-icon">
+          <i class="fa-solid fa-heart-pulse"></i>
+        </div>
+        <div class="brand-text">
+          <h2>HealSure</h2>
+          <p>Electronic Health Record System</p>
+        </div>
+      </div>
+
+      <div class="welcome-text">
+        <h1>Join Our<br>Doctor Network</h1>
+        <p>Create your account to start managing patient records, treatments, and digital prescriptions seamlessly.</p>
+      </div>
+
+      <div class="left-footer">
+        <p class="quote">Trusted Care.<br>Through Technology.</p>
+      </div>
+    </div>
+
+    <!-- Right Form Section -->
+    <div class="right-section">
+      <div class="card">
+        <div class="card-header">
+          <div class="profile-avatar">
+            <i class="fa-solid fa-user-doctor"></i>
+          </div>
+          <h2>Doctor Registration</h2>
+          <p>Fill in your professional details to create an account</p>
+        </div>
+
+        <form id="doctorRegisterForm">
+          <div class="form-grid">
+            
+            <!-- Full Name -->
+            <div class="input-group full-width">
+              <i class="fa-regular fa-user left-icon"></i>
+              <input type="text" id="fullName" placeholder="Full Name (e.g., Dr. John Doe)" required />
+            </div>
+
+            <!-- License Number -->
+            <div class="input-group">
+              <i class="fa-solid fa-id-card left-icon"></i>
+              <input type="text" id="licenseNo" placeholder="Medical License No." required />
+            </div>
+
+            <!-- Specialization -->
+            <div class="input-group">
+              <i class="fa-solid fa-stethoscope left-icon"></i>
+              <select id="specialization" required>
+                <option value="" disabled selected>Select Specialization</option>
+                <option value="General Physician">General Physician</option>
+                <option value="Cardiology">Cardiology</option>
+                <option value="Dermatology">Dermatology</option>
+                <option value="Neurology">Neurology</option>
+                <option value="Pediatrics">Pediatrics</option>
+                <option value="Orthopedics">Orthopedics</option>
+              </select>
+            </div>
+
+            <!-- Email Address -->
+            <div class="input-group full-width">
+              <i class="fa-regular fa-envelope left-icon"></i>
+              <input type="email" id="email" placeholder="Email Address" required />
+            </div>
+
+            <!-- Phone Number -->
+            <div class="input-group full-width">
+              <i class="fa-solid fa-phone left-icon"></i>
+              <input type="tel" id="phone" placeholder="Phone Number" required />
+            </div>
+
+            <!-- Password -->
+            <div class="input-group">
+              <i class="fa-solid fa-lock left-icon"></i>
+              <input type="password" id="password" placeholder="Password" required />
+            </div>
+
+            <!-- Confirm Password -->
+            <div class="input-group">
+              <i class="fa-solid fa-shield-halved left-icon"></i>
+              <input type="password" id="confirmPassword" placeholder="Confirm Password" required />
+            </div>
+
+            <!-- Register Button -->
+            <div class="full-width">
+              <button type="submit" class="btn-submit">
+                <i class="fa-solid fa-user-plus"></i> Complete Registration
+              </button>
+            </div>
+
+          </div>
+        </form>
+
+        <!-- Already registered link -->
+        <div class="login-option">
+          Already have an account? <a href="Doctor_login.html">Login here</a>
+        </div>
+
+        <div class="back-link-wrapper">
+          <a href="index.html" class="back-link">
+            <i class="fa-solid fa-arrow-left"></i> Back to Home
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+document.getElementById("doctorRegisterForm").addEventListener("submit", async function(e) {
+    e.preventDefault();
+
+    const fullName = document.getElementById("fullName").value.trim();
+    const licenseNo = document.getElementById("licenseNo").value.trim();
+    const specialization = document.getElementById("specialization").value;
+    const email = document.getElementById("email").value.trim();
+    const phone = document.getElementById("phone").value.trim();
+    const password = document.getElementById("password").value;
+    const confirmPassword = document.getElementById("confirmPassword").value;
+
+    if (password !== confirmPassword) {
+        alert("Passwords do not match!");
+        return;
+    }
+
+    try {
+        const response = await fetch("http://localhost:5000/api/doctor/register", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ fullName, licenseNo, specialization, email, phone, password })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            alert(data.message);
+            window.location.href = "Doctor_login.html";
+        } else {
+            alert(data.message);
+        }
+    } catch (error) {
+        console.error("Error:", error);
+        alert("Server connection failed.");
+    }
+});
+</script>
+
+</body>
+</html>

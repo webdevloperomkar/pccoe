@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SOC Admin Security Dashboard</title>
+    <style>
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #0f172a; color: #f8fafc; margin: 0; padding: 20px; }
+        h1 { color: #38bdf8; font-size: 24px; margin-bottom: 20px; border-bottom: 2px solid #1e293b; padding-bottom: 10px; }
+        
+        /* Stats Grid */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 25px; }
+        .card { background: #1e293b; padding: 18px; border-radius: 8px; border-left: 4px solid #38bdf8; }
+        .card.danger { border-left-color: #ef4444; }
+        .card.warning { border-left-color: #f59e0b; }
+        .card h3 { font-size: 13px; color: #94a3b8; text-transform: uppercase; margin: 0 0 8px 0; }
+        .card .number { font-size: 28px; font-weight: bold; }
+
+        /* Tables & Layout */
+        .section-title { font-size: 18px; color: #f1f5f9; margin: 20px 0 10px 0; }
+        .table-container { background: #1e293b; border-radius: 8px; overflow-x: auto; margin-bottom: 30px; }
+        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 14px; }
+        th, td { padding: 12px 16px; border-bottom: 1px solid #334155; }
+        th { background-color: #0f172a; color: #94a3b8; font-weight: 600; }
+        tr:hover { background-color: #334155; }
+
+        /* Badges */
+        .badge { padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; display: inline-block; }
+        .badge-CRITICAL { background: #7f1d1d; color: #fca5a5; }
+        .badge-HIGH { background: #991b1b; color: #fca5a5; }
+        .badge-MEDIUM { background: #78350f; color: #fde68a; }
+        .badge-LOW { background: #065f46; color: #a7f3d0; }
+        .badge-ALLOWED { background: #065f46; color: #a7f3d0; }
+        .badge-DENIED { background: #991b1b; color: #fca5a5; }
+
+        /* Buttons */
+        .btn { border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; margin-right: 4px; }
+        .btn-resolve { background: #10b981; color: white; }
+        .btn-dismiss { background: #64748b; color: white; }
+        .btn:hover { opacity: 0.85; }
+    </style>
+</head>
+<body>
+
+    <h1>🚨 Security Operations Center (SOC) Dashboard</h1>
+
+    <!-- Metrics Header -->
+    <div class="stats-grid">
+        <div class="card">
+            <h3>Total Audit Logs</h3>
+            <div class="number" id="metricTotalLogs">0</div>
+        </div>
+        <div class="card danger">
+            <h3>Active Security Alerts</h3>
+            <div class="number" id="metricActiveAlerts">0</div>
+        </div>
+        <div class="card warning">
+            <h3>Denied Access Attempts</h3>
+            <div class="number" id="metricDeniedAccess">0</div>
+        </div>
+    </div>
+
+    <!-- Active Security Alerts Section -->
+    <div class="section-title">⚠️ Flagged Threats & Security Alerts</div>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Rule Triggered</th>
+                    <th>Severity</th>
+                    <th>User ID / Role</th>
+                    <th>Evidence Details</th>
+                    <th>Time</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="alertsTableBody">
+                <tr><td colspan="6" style="text-align:center;">Loading security alerts...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Live Access Logs Section -->
+    <div class="section-title">📋 Live System Access Audit Log (Recent 30)</div>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Log ID</th>
+                    <th>User ID</th>
+                    <th>Role</th>
+                    <th>Endpoint/Action</th>
+                    <th>Records Count</th>
+                    <th>Status</th>
+                    <th>Timestamp</th>
+                </tr>
+            </thead>
+            <tbody id="logsTableBody">
+                <tr><td colspan="7" style="text-align:center;">Loading audit logs...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        // Fetch dashboard metrics, alerts, and logs from server
+        async function fetchDashboardData() {
+            try {
+                const response = await fetch('/api/admin/security-metrics');
+                const data = await response.json();
+
+                if (!data.success) return;
+
+                // Update Metric Counters
+                document.getElementById('metricTotalLogs').innerText = data.metrics.totalLogs || 0;
+                document.getElementById('metricActiveAlerts').innerText = data.metrics.activeAlerts || 0;
+                document.getElementById('metricDeniedAccess').innerText = data.metrics.deniedAccess || 0;
+
+                // Render Active Alerts Table
+                const alertsBody = document.getElementById('alertsTableBody');
+                if (data.activeAlerts.length === 0) {
+                    alertsBody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#10b981;">✅ No active threat alerts detected. All systems normal.</td></tr>`;
+                } else {
+                    alertsBody.innerHTML = data.activeAlerts.map(alert => `
+                        <tr>
+                            <td><strong>${alert.rule_name}</strong></td>
+                            <td><span class="badge badge-${alert.severity}">${alert.severity}</span></td>
+                            <td>User #${alert.user_id} (${alert.user_role})</td>
+                            <td>${alert.evidence_details}</td>
+                            <td>${new Date(alert.created_at).toLocaleString()}</td>
+                            <td>
+                                <button class="btn btn-resolve" onclick="updateAlertStatus(${alert.id}, 'RESOLVED')">Resolve</button>
+                                <button class="btn btn-dismiss" onclick="updateAlertStatus(${alert.id}, 'DISMISSED')">Dismiss</button>
+                            </td>
+                        </tr>
+                    `).join('');
+                }
+
+                // Render Audit Logs Table
+                const logsBody = document.getElementById('logsTableBody');
+                logsBody.innerHTML = data.recentLogs.map(log => `
+                    <tr>
+                        <td>#${log.id}</td>
+                        <td>${log.user_id}</td>
+                        <td>${log.user_role}</td>
+                        <td><code>${log.action}</code></td>
+                        <td>${log.records_count}</td>
+                        <td><span class="badge badge-${log.status}">${log.status}</span></td>
+                        <td>${new Date(log.timestamp).toLocaleString()}</td>
+                    </tr>
+                `).join('');
+
+            } catch (err) {
+                console.error("Dashboard Auto-Refresh Error:", err);
+            }
+        }
+
+        // Action function to resolve or dismiss alerts
+        async function updateAlertStatus(alertId, newStatus) {
+            try {
+                const response = await fetch('/api/admin/resolve-alert', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ alertId, status: newStatus })
+                });
+                const res = await response.json();
+                if (res.success) {
+                    fetchDashboardData();
+                }
+            } catch (err) {
+                alert("Error updating alert status");
+            }
+        }
+
+        // Initial Load and Auto-Refresh every 5 seconds
+        fetchDashboardData();
+        setInterval(fetchDashboardData, 5000);
+    </script>
+</body>
+</html>

@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nurse Dashboard - HealSure</title>
+    <link rel="stylesheet" href="nurse-dashboard.css">
+    <style>
+        .logout-link {
+            display: inline-block;
+            margin-top: 15px;
+            color: #dc3545;
+            text-decoration: none;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .patient-card-item {
+            background: #fff;
+            padding: 15px;
+            margin-bottom: 12px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .patient-details h4 { margin: 0 0 5px 0; color: #333; }
+        .patient-details p { margin: 2px 0; font-size: 13px; color: #666; }
+        .badge {
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .badge-upcoming { background: #e3f2fd; color: #0d47a1; }
+        .badge-today { background: #e8f5e9; color: #1b5e20; }
+    </style>
+</head>
+
+<body>
+
+<div class="dashboard-page">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <div class="logo">
+            <span>+</span> HealSure
+            <small>Electronic Health Record System</small>
+        </div>
+        <nav>
+            <a href="nurse-dashboard.html" class="active">Dashboard</a>
+            <a href="#" onclick="alert('Patients view coming soon')">Patients</a>
+            <a href="#" onclick="alert('Appointments view coming soon')">Appointments</a>
+            <a href="#" class="logout-link" onclick="logout()">Logout</a>
+        </nav>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+        <div class="top-section">
+            <div>
+                <h1>Nurse Dashboard</h1>
+                <p>Welcome back! Manage your patients and daily activities.</p>
+            </div>
+            <div class="profile-icon" id="nurseProfileIcon" title="Nurse Profile">
+                👩‍⚕️
+            </div>
+        </div>
+
+        <!-- WELCOME -->
+        <section class="welcome-card">
+            <div>
+                <h2>Hello, <span id="nurseGreetingName">Nurse</span>!</h2>
+                <p>Keep track of your assigned patients, appointments and patient vitals.</p>
+            </div>
+            <a href="#todaySection">View Patients</a>
+        </section>
+
+        <!-- STATUS CARDS -->
+        <section class="cards">
+            <div class="card">
+                <div class="card-icon">👥</div>
+                <div>
+                    <h3>Assigned Patients</h3>
+                    <p id="assignedCount">0</p>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-icon">🌡️</div>
+                <div>
+                    <h3>Patient Vitals</h3>
+                    <p id="vitalsCount">0</p>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-icon">📅</div>
+                <div>
+                    <h3>Appointments</h3>
+                    <p id="appointmentsCount">0</p>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- QUICK ACTIONS: VITALS & BOOKING -->
+<section class="quick-actions" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px;">
+    
+    <!-- RECORD VITALS FORM -->
+    <div style="background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+        <h3>🌡️ Record Patient Vitals</h3>
+        <form id="vitalsForm" style="display: flex; flex-direction: column; gap: 10px; margin-top: 10px;">
+            <select id="vitalsPatientSelect" required style="padding: 8px; border-radius: 4px; border: 1px solid #ccc;">
+                <option value="">-- Select Patient --</option>
+            </select>
+            <input type="text" id="tempInput" placeholder="Temp (°F) e.g., 98.6" style="padding: 8px; border-radius: 4px; border: 1px solid #ccc;" />
+            <input type="text" id="bpInput" placeholder="Blood Pressure e.g., 120/80" style="padding: 8px; border-radius: 4px; border: 1px solid #ccc;" />
+            <input type="text" id="pulseInput" placeholder="Pulse Rate (bpm) e.g., 72" style="padding: 8px; border-radius: 4px; border: 1px solid #ccc;" />
+            <input type="text" id="spo2Input" placeholder="SpO2 (%) e.g., 98" style="padding: 8px; border-radius: 4px; border: 1px solid #ccc;" />
+            <button type="submit" style="background: #0d47a1; color: white; border: none; padding: 10px; border-radius: 4px; cursor: pointer; font-weight: bold;">Save Vitals</button>
+        </form>
+    </div>
+
+    <!-- BOOK APPOINTMENT FORM -->
+    <div style="background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+        <h3>📅 Book New Appointment</h3>
+        <form id="nurseBookForm" style="display: flex; flex-direction: column; gap: 10px; margin-top: 10px;">
+            <select id="bookingPatientSelect" required style="padding: 8px; border-radius: 4px; border: 1px solid #ccc;">
+                <option value="">-- Select Patient --</option>
+            </select>
+            <input type="text" id="patientNameInput" placeholder="Patient Full Name" required style="padding: 8px; border-radius: 4px; border: 1px solid #ccc;" />
+            <div style="display: flex; gap: 10px;">
+                <input type="number" id="patientAgeInput" placeholder="Age" required style="flex: 1; padding: 8px; border-radius: 4px; border: 1px solid #ccc;" />
+                <select id="patientGenderInput" style="flex: 1; padding: 8px; border-radius: 4px; border: 1px solid #ccc;">
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+            <input type="text" id="patientSymptomsInput" placeholder="Chief Symptoms" required style="padding: 8px; border-radius: 4px; border: 1px solid #ccc;" />
+            <button type="submit" style="background: #1b5e20; color: white; border: none; padding: 10px; border-radius: 4px; cursor: pointer; font-weight: bold;">Book Appointment</button>
+        </form>
+    </div>
+
+</section>
+        <!-- PATIENTS SECTIONS -->
+        <section class="patients-section">
+            <div class="section-heading" id="todaySection">
+                <h2>Today's Patients</h2>
+            </div>
+            <div id="todayPatientsContainer">
+                <p>Loading today's patient queue...</p>
+            </div>
+
+            <div class="section-heading" style="margin-top: 30px;">
+                <h2>Upcoming Patients</h2>
+            </div>
+            <div id="upcomingPatientsContainer">
+                <p>Loading upcoming queue...</p>
+            </div>
+        </section>
+    </main>
+</div>
+
+<script>
+    const currentNurse = JSON.parse(localStorage.getItem("nurseToken"));
+
+    // Session Protection
+    if (!currentNurse || !currentNurse.id) {
+        alert("Access denied. Please login as a Nurse first.");
+        window.location.href = "nurse-login.html";
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+        document.getElementById("nurseGreetingName").innerText = currentNurse.name || "Nurse";
+        fetchNurseDashboardData();
+    });
+
+    async function fetchNurseDashboardData() {
+        try {
+            const response = await fetch(`http://localhost:5000/api/nurse/dashboard/${currentNurse.id}`);
+            const data = await response.json();
+
+            if (data.success) {
+                // Update KPI Cards
+                document.getElementById("assignedCount").innerText = data.assignedPatientsCount || 0;
+                document.getElementById("vitalsCount").innerText = data.vitalsCount || 0;
+                document.getElementById("appointmentsCount").innerText = data.appointmentsCount || 0;
+
+                // Render Tables/Lists
+                renderPatients(data.todayPatients || [], "todayPatientsContainer", "badge-today");
+                renderPatients(data.upcomingPatients || [], "upcomingPatientsContainer", "badge-upcoming");
+            }
+        } catch (error) {
+            console.error("Error fetching nurse data:", error);
+            document.getElementById("todayPatientsContainer").innerHTML = "<p>No patients scheduled for today.</p>";
+            document.getElementById("upcomingPatientsContainer").innerHTML = "<p>No upcoming patients scheduled.</p>";
+        }
+    }
+
+    function renderPatients(patientsList, containerId, badgeClass) {
+        const container = document.getElementById(containerId);
+        container.innerHTML = "";
+
+        if (patientsList.length === 0) {
+            container.innerHTML = "<p style='color: #777;'>No patient records found.</p>";
+            return;
+        }
+
+        patientsList.forEach(patient => {
+            container.innerHTML += `
+                <div class="patient-card-item">
+                    <div class="patient-details">
+                        <h4>Token #${patient.token_number || '--'}: ${patient.name || 'Patient'}</h4>
+                        <p><strong>Age/Gender:</strong> ${patient.age || 'N/A'} Yrs | ${patient.gender || 'N/A'}</p>
+                        <p><strong>Symptoms:</strong> ${patient.symptoms || 'None recorded'}</p>
+                    </div>
+                    <div>
+                        <span class="badge ${badgeClass}">${patient.status || 'Scheduled'}</span>
+                    </div>
+                </div>
+            `;
+        });
+    }
+
+    function logout() {
+        localStorage.removeItem("nurseToken");
+        window.location.href = "nurse-login.html";
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+    document.getElementById("nurseGreetingName").innerText = currentNurse.name || "Nurse";
+    fetchNurseDashboardData();
+    loadPatientsDropdown(); // Load patients list on init
+});
+
+// Populate dropdowns with registered patients
+async function loadPatientsDropdown() {
+    try {
+        const res = await fetch("http://localhost:5000/api/nurse/patients-list");
+        const data = await res.json();
+        
+        if (data.success) {
+            const vitalsSelect = document.getElementById("vitalsPatientSelect");
+            const bookingSelect = document.getElementById("bookingPatientSelect");
+            
+            data.patients.forEach(p => {
+                const opt = `<option value="${p.id}">${p.name || p.email} (ID: ${p.id})</option>`;
+                vitalsSelect.innerHTML += opt;
+                bookingSelect.innerHTML += opt;
+            });
+        }
+    } catch (err) {
+        console.error("Error loading patient list:", err);
+    }
+}
+
+// Handle Vitals Form Submission
+document.getElementById("vitalsForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const payload = {
+        patientId: document.getElementById("vitalsPatientSelect").value,
+        nurseId: currentNurse.id,
+        temperature: document.getElementById("tempInput").value,
+        bloodPressure: document.getElementById("bpInput").value,
+        pulseRate: document.getElementById("pulseInput").value,
+        sp02: document.getElementById("spo2Input").value
+    };
+
+    const res = await fetch("http://localhost:5000/api/nurse/vitals", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    alert(data.message);
+    if (data.success) {
+        e.target.reset();
+        fetchNurseDashboardData();
+    }
+});
+
+// Handle Nurse Appointment Booking
+document.getElementById("nurseBookForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const payload = {
+        patientId: document.getElementById("bookingPatientSelect").value,
+        name: document.getElementById("patientNameInput").value,
+        age: document.getElementById("patientAgeInput").value,
+        gender: document.getElementById("patientGenderInput").value,
+        symptoms: document.getElementById("patientSymptomsInput").value
+    };
+
+    const res = await fetch("http://localhost:5000/api/nurse/book-appointment", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    alert(data.message);
+    if (data.success) {
+        e.target.reset();
+        fetchNurseDashboardData();
+    }
+});
+</script>
+
+</body>
+</html>

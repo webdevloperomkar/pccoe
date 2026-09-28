@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Login - HealSure</title>
+    <link rel="stylesheet" href="patient-login.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Left Hero Section -->
+        <div class="left-section">
+            <div class="brand">
+                <i class="fa-solid fa-plus brand-icon"></i>
+                <div>
+                    <span class="brand-title">HealSure</span>
+                    <span class="brand-sub">Electronic Health Record System</span>
+                </div>
+            </div>
+
+            <div class="hero-content">
+                <h1>Welcome Back,<br>Patient</h1>
+                <p>Access your personal health portal, test results, medical history, and upcoming appointments securely.</p>
+            </div>
+
+            <div class="tagline">
+                <em>Trusted Care.<br>Through Technology.</em>
+            </div>
+        </div>
+
+        <!-- Right Form Section -->
+        <div class="right-section">
+            <div class="card">
+                <div class="icon-badge">
+                    <i class="fa-solid fa-user"></i>
+                </div>
+                <h2>Patient Login</h2>
+                <p class="sub-text">Enter your credentials to access your account</p>
+
+                <form id="loginForm">
+                    <div class="input-group">
+                        <input type="email" id="email" placeholder="Email Address" required>
+                    </div>
+                    <div class="input-group">
+                        <input type="password" id="password" placeholder="Password" required>
+                    </div>
+
+                    <button type="submit" class="submit-btn">Login</button>
+                </form>
+
+                <div class="footer-links">
+                    <p>Don't have an account? <a href="patient-register.html">Register here</a></p>
+                    <a href="Main-Dashboard.html" class="back-home">Back to Home</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script>
+document.getElementById("loginForm").addEventListener("submit", async function(event) {
+    event.preventDefault();
+
+    let email = document.getElementById("email").value;
+    let password = document.getElementById("password").value;
+
+    try {
+        const response = await fetch("http://localhost:5000/api/patient/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, password })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            // Store patient data under 'patientToken' so patient-dashboard.html can read it
+            localStorage.setItem("patientToken", JSON.stringify(data.patient));
+            
+            alert("Login Successful!");
+            
+            // Redirect to patient dashboard
+            window.location.href = "patient-dashboard.html";
+        } else {
+            alert(data.message);
+        }
+    } catch (error) {
+        console.error("Error:", error);
+        alert("Unable to connect to the server.");
+    }
+});
+</script>
+</body>
+</html>

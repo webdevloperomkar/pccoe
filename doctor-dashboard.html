@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HealSure - Doctor Dashboard</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    :root {
+      --primary: #4318ff;
+      --primary-gradient: linear-gradient(135deg, #868CFF 0%, #4318FF 100%);
+      --accent-green: #05cd99;
+      --accent-green-gradient: linear-gradient(135deg, #05cd99 0%, #00b386 100%);
+      --accent-red: #ee5d50;
+      --bg-color: #f4f7fe;
+      --text-dark: #1b2559;
+      --text-muted: #707ebe;
+      --card-bg: rgba(255, 255, 255, 0.9);
+      --glass-shadow: 0 20px 40px rgba(0, 0, 0, 0.04);
+      --hover-shadow: 0 22px 45px rgba(67, 24, 255, 0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-dark);
+      display: flex;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Keyframe Animations */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(15px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes pulseGlow {
+      0% { box-shadow: 0 0 0 0 rgba(67, 24, 255, 0.4); }
+      70% { box-shadow: 0 0 0 12px rgba(67, 24, 255, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(67, 24, 255, 0); }
+    }
+
+    /* Sidebar Navigation */
+    .sidebar {
+      width: 270px;
+      background: #ffffff;
+      padding: 30px 20px;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 4px 0 25px rgba(0, 0, 0, 0.02);
+      z-index: 10;
+      transition: all 0.3s ease;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 40px;
+      padding-left: 8px;
+    }
+
+    .brand i {
+      font-size: 30px;
+      background: var(--primary-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: pulseGlow 3s infinite;
+      border-radius: 50%;
+    }
+
+    .brand h2 {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--text-dark);
+      letter-spacing: -0.5px;
+    }
+
+    .nav-links {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      flex-grow: 1;
+    }
+
+    .nav-links a {
+      text-decoration: none;
+      color: var(--text-muted);
+      padding: 14px 18px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      font-weight: 500;
+      font-size: 15px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+    }
+
+    .nav-links a.active, .nav-links a:hover {
+      background: var(--primary-gradient);
+      color: #ffffff;
+      transform: translateX(5px);
+      box-shadow: 0 10px 20px rgba(67, 24, 255, 0.25);
+    }
+
+    .btn-logout {
+      background: #fff5f5;
+      color: var(--accent-red);
+      border: none;
+      padding: 14px;
+      border-radius: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transition: all 0.3s ease;
+    }
+
+    .btn-logout:hover {
+      background: var(--accent-red);
+      color: #ffffff;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 18px rgba(238, 93, 80, 0.3);
+    }
+
+    /* Main Content Area */
+    .main-content {
+      flex: 1;
+      padding: 35px 40px;
+      overflow-y: auto;
+      animation: fadeIn 0.6s ease-out;
+    }
+
+    /* Header Bar & Top-Right Profile Circle */
+    .header-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 35px;
+    }
+
+    .header-title h1 {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--text-dark);
+      letter-spacing: -0.5px;
+    }
+
+    .header-title p {
+      color: var(--text-muted);
+      font-size: 14px;
+      margin-top: 4px;
+    }
+
+    /* Animated Profile Circle Container Top-Right */
+    .doctor-profile-top {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      background: #ffffff;
+      padding: 8px 20px 8px 10px;
+      border-radius: 50px;
+      box-shadow: var(--glass-shadow);
+      border: 1px solid rgba(224, 229, 242, 0.6);
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+
+    .doctor-profile-top:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--hover-shadow);
+    }
+
+    /* Circle Avatar */
+    .profile-circle {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: var(--primary-gradient);
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      box-shadow: 0 6px 15px rgba(67, 24, 255, 0.3);
+      transition: transform 0.4s ease;
+    }
+
+    .doctor-profile-top:hover .profile-circle {
+      transform: rotate(360deg);
+    }
+
+    .profile-details h4 {
+      font-size: 15px;
+      color: var(--text-dark);
+      font-weight: 600;
+      line-height: 1.2;
+    }
+
+    .profile-details span {
+      font-size: 12px;
+      color: var(--primary);
+      font-weight: 500;
+    }
+
+    /* Dashboard Layout Grid */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+    }
+
+    .card {
+      background: var(--card-bg);
+      backdrop-filter: blur(10px);
+      padding: 28px;
+      border-radius: 24px;
+      box-shadow: var(--glass-shadow);
+      border: 1px solid rgba(255, 255, 255, 0.8);
+      transition: all 0.3s ease;
+    }
+
+    .card:hover {
+      box-shadow: var(--hover-shadow);
+    }
+
+    .card-title {
+      font-size: 19px;
+      font-weight: 700;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: var(--text-dark);
+    }
+
+    .card-title i {
+      font-size: 20px;
+      background: #f4f7fe;
+      padding: 10px;
+      border-radius: 12px;
+    }
+
+    /* Queue List */
+    .queue-list {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      max-height: 520px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+
+    .patient-card {
+      background: #ffffff;
+      border: 1px solid #e0e5f2;
+      padding: 18px;
+      border-radius: 18px;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      animation: fadeIn 0.4s ease-out;
+    }
+
+    .patient-card:hover, .patient-card.selected {
+      border-color: var(--primary);
+      background: #f8f9ff;
+      transform: translateY(-3px) scale(1.01);
+      box-shadow: 0 10px 20px rgba(67, 24, 255, 0.08);
+    }
+
+    .token-badge {
+      background: var(--primary-gradient);
+      color: white;
+      width: 46px;
+      height: 46px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 16px;
+      flex-shrink: 0;
+      box-shadow: 0 4px 12px rgba(67, 24, 255, 0.25);
+    }
+
+    .patient-details h4 {
+      font-size: 15px;
+      color: var(--text-dark);
+      font-weight: 600;
+    }
+
+    .patient-details p {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    /* Consultation Form Controls */
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: var(--text-dark);
+    }
+
+    .form-group input, .form-group textarea, .form-group select {
+      width: 100%;
+      padding: 14px 16px;
+      border: 1.5px solid #e0e5f2;
+      border-radius: 14px;
+      outline: none;
+      font-size: 14px;
+      background: #ffffff;
+      transition: all 0.3s ease;
+    }
+
+    .form-group textarea {
+      height: 120px;
+      resize: vertical;
+    }
+
+    .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px rgba(67, 24, 255, 0.1);
+    }
+
+    .btn-submit {
+      width: 100%;
+      background: var(--accent-green-gradient);
+      color: white;
+      border: none;
+      padding: 16px;
+      border-radius: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 15px;
+      transition: all 0.3s ease;
+      box-shadow: 0 8px 20px rgba(5, 205, 153, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .btn-submit:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 25px rgba(5, 205, 153, 0.4);
+    }
+
+    /* Scrollbar styling */
+    .queue-list::-webkit-scrollbar {
+      width: 6px;
+    }
+    .queue-list::-webkit-scrollbar-thumb {
+      background: #d0d7e5;
+      border-radius: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Sidebar Nav -->
+  <div class="sidebar">
+    <div class="brand">
+      <i class="fa-solid fa-heart-pulse"></i>
+      <h2>HealSure</h2>
+    </div>
+
+    <ul class="nav-links">
+      <li><a href="#" class="active"><i class="fa-solid fa-clipboard-user"></i> Patient Queue</a></li>
+      <li><a href="#"><i class="fa-solid fa-clock-rotate-left"></i> History</a></li>
+    </ul>
+
+    <button class="btn-logout" id="logoutBtn">
+      <i class="fa-solid fa-right-from-bracket"></i> Logout
+    </button>
+  </div>
+
+  <!-- Main Area -->
+  <div class="main-content">
+    
+    <!-- Top Bar with Top-Right Profile Circle -->
+    <div class="header-bar">
+      <div class="header-title">
+        <h1>Doctor Dashboard</h1>
+        <p id="doctorLicense">License No: Loading...</p>
+      </div>
+
+      <!-- Profile Circle Container -->
+      <div class="doctor-profile-top">
+        <div class="profile-circle">
+          <i class="fa-solid fa-user-doctor"></i>
+        </div>
+        <div class="profile-details">
+          <h4 id="doctorName">Dr. Name</h4>
+          <span id="doctorSpec">Specialization</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dashboard Content -->
+    <div class="dashboard-grid">
+      
+      <!-- Left Column: Patient Queue / History -->
+      <div class="card">
+        <div class="card-title">
+          <span>Active Patient Queue</span>
+          <i class="fa-solid fa-users" style="color: var(--primary);"></i>
+        </div>
+
+        <div class="queue-list" id="queueContainer">
+          <p style="text-align: center; color: var(--text-muted); padding-top: 20px;">Loading queue...</p>
+        </div>
+      </div>
+
+      <!-- Right Column: Consultation & Prescription -->
+      <div class="card">
+        <div class="card-title">
+          <span>Consultation Form</span>
+          <i class="fa-solid fa-file-medical" style="color: var(--accent-green);"></i>
+        </div>
+
+        <form id="consultationForm">
+          <input type="hidden" id="selectedAppointmentId">
+
+          <div class="form-group">
+            <label>Selected Patient</label>
+            <input type="text" id="patientNameInput" placeholder="Click a patient from the queue" readonly style="background: #f4f7fe; cursor: not-allowed;">
+          </div>
+
+          <div class="form-group">
+            <label>Prescription & Notes</label>
+            <textarea id="prescriptionText" placeholder="Write dosage, medicines, and advice..." required></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>Appointment Status</label>
+            <select id="statusSelect" required>
+              <option value="Completed">Mark as Completed</option>
+              <option value="Cancelled">Cancel Appointment</option>
+            </select>
+          </div>
+
+          <button type="submit" class="btn-submit">
+            <i class="fa-solid fa-check-circle"></i> Save Consultation
+          </button>
+        </form>
+      </div>
+
+    </div>
+  </div>
+
+<script>
+// Check Doctor Session
+const doctorData = JSON.parse(localStorage.getItem("doctorToken"));
+
+if (!doctorData) {
+  alert("Session expired. Please log in.");
+  window.location.href = "Doctor_login.html";
+} else {
+  document.getElementById("doctorName").innerText = doctorData.fullName;
+  document.getElementById("doctorLicense").innerText = "License No: " + doctorData.licenseNo;
+  document.getElementById("doctorSpec").innerText = doctorData.specialization;
+}
+
+// Track current view ('queue' or 'history')
+let currentView = 'queue';
+
+// Toggle Sidebar Navigation Tabs
+const navLinks = document.querySelectorAll('.nav-links a');
+
+navLinks[0].addEventListener('click', (e) => {
+  e.preventDefault();
+  navLinks[0].classList.add('active');
+  navLinks[1].classList.remove('active');
+  currentView = 'queue';
+  document.querySelector('.card-title span').innerText = 'Active Patient Queue';
+  loadQueue();
+});
+
+navLinks[1].addEventListener('click', (e) => {
+  e.preventDefault();
+  navLinks[1].classList.add('active');
+  navLinks[0].classList.remove('active');
+  currentView = 'history';
+  document.querySelector('.card-title span').innerText = 'Consultation History';
+  loadHistory();
+});
+
+// Fetch Active Patients Queue
+async function loadQueue() {
+  const queueContainer = document.getElementById("queueContainer");
+  try {
+    const res = await fetch("http://localhost:5000/api/doctor/queue");
+    const data = await res.json();
+    queueContainer.innerHTML = "";
+
+    if (!data.success || !data.appointments || data.appointments.length === 0) {
+      queueContainer.innerHTML = '<p style="text-align: center; color: var(--text-muted); padding-top: 20px;">No upcoming appointments.</p>';
+      return;
+    }
+
+    data.appointments.forEach(app => {
+      const card = document.createElement("div");
+      card.className = "patient-card";
+      card.onclick = () => selectPatient(app);
+      
+      card.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 14px;">
+          <div class="token-badge">#${app.token_number}</div>
+          <div class="patient-details">
+            <h4>${app.patient_name} (${app.age} yrs, ${app.gender})</h4>
+            <p><strong>Symptoms:</strong> ${app.symptoms}</p>
+          </div>
+        </div>
+        <i class="fa-solid fa-chevron-right" style="color: var(--text-muted);"></i>
+      `;
+
+      queueContainer.appendChild(card);
+    });
+  } catch (err) {
+    console.error("Failed to load queue:", err);
+    queueContainer.innerHTML = `<p style="text-align: center; color: var(--accent-red); padding-top: 20px;">Server connection error.</p>`;
+  }
+}
+
+// Fetch Completed / Cancelled History
+async function loadHistory() {
+  const queueContainer = document.getElementById("queueContainer");
+  try {
+    const res = await fetch("http://localhost:5000/api/doctor/history");
+    const data = await res.json();
+    queueContainer.innerHTML = "";
+
+    if (!data.success || !data.appointments || data.appointments.length === 0) {
+      queueContainer.innerHTML = '<p style="text-align: center; color: var(--text-muted); padding-top: 20px;">No consultation history found.</p>';
+      return;
+    }
+
+    data.appointments.forEach(app => {
+      const card = document.createElement("div");
+      card.className = "patient-card";
+      const statusGradient = app.status === 'Completed' ? 'var(--accent-green-gradient)' : 'linear-gradient(135deg, #ee5d50 0%, #dc3545 100%)';
+
+      card.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 14px;">
+          <div class="token-badge" style="background: ${statusGradient}; shadow: none;">#${app.token_number}</div>
+          <div class="patient-details">
+            <h4>${app.patient_name} (${app.status})</h4>
+            <p><strong>Rx:</strong> ${app.prescription || 'No notes provided'}</p>
+          </div>
+        </div>
+      `;
+
+      queueContainer.appendChild(card);
+    });
+  } catch (err) {
+    console.error("Failed to load history:", err);
+    queueContainer.innerHTML = `<p style="text-align: center; color: var(--accent-red); padding-top: 20px;">Server connection error.</p>`;
+  }
+}
+
+// Select Patient for Prescription
+function selectPatient(appointment) {
+  document.getElementById("selectedAppointmentId").value = appointment.id;
+  document.getElementById("patientNameInput").value = `#${appointment.token_number} - ${appointment.patient_name}`;
+  
+  // Highlight selected patient card
+  document.querySelectorAll('.patient-card').forEach(card => card.classList.remove('selected'));
+  event.currentTarget.classList.add('selected');
+}
+
+// Submit Prescription & Update Status
+document.getElementById("consultationForm").addEventListener("submit", async function(e) {
+  e.preventDefault();
+
+  const appointmentId = document.getElementById("selectedAppointmentId").value;
+  const prescription = document.getElementById("prescriptionText").value.trim();
+  const status = document.getElementById("statusSelect").value;
+
+  if (!appointmentId) {
+    alert("Please select a patient from the queue first.");
+    return;
+  }
+
+  try {
+    const res = await fetch("http://localhost:5000/api/doctor/update-appointment", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ appointmentId, prescription, status })
+    });
+
+    const data = await res.json();
+
+    if (data.success) {
+      alert("Consultation completed successfully!");
+      document.getElementById("consultationForm").reset();
+      document.getElementById("selectedAppointmentId").value = "";
+      
+      // Reload active view
+      if (currentView === 'queue') loadQueue();
+      else loadHistory();
+    } else {
+      alert(data.message);
+    }
+  } catch (err) {
+    console.error("Update error:", err);
+    alert("Server error.");
+  }
+});
+
+// Logout Handler
+document.getElementById("logoutBtn").addEventListener("click", () => {
+  localStorage.removeItem("doctorToken");
+  window.location.href = "Doctor_login.html";
+});
+
+// Initial Load
+loadQueue();
+</script>
+
+</body>
+</html>

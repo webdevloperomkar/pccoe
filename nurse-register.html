@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nurse Registration - HealSure</title>
+    <link rel="stylesheet" href="nurse-register.css">
+</head>
+
+<body>
+
+<div class="register-page">
+
+    <!-- LEFT SIDE -->
+    <div class="left-section">
+        <div class="logo">
+            <span>+</span> HealSure
+            <small>Electronic Health Record System</small>
+        </div>
+
+        <div class="welcome">
+            <h1>Join Our<br>Nursing Team</h1>
+            <p>Register securely to manage patients, monitor vital signs and coordinate healthcare services.</p>
+        </div>
+
+        <div class="bottom-text">
+            Trusted Care.<br>Through Technology.
+        </div>
+    </div>
+
+    <!-- RIGHT SIDE -->
+    <div class="right-section">
+        <div class="register-card">
+            <div class="card-icon">+</div>
+
+            <h2>Nurse Registration</h2>
+            <p class="card-subtitle">Fill in your details to join our nursing team</p>
+
+            <form id="nurseRegisterForm">
+                <div class="input-group">
+                    <label>Full Name</label>
+                    <input type="text" id="nurseName" placeholder="Enter your full name" required>
+                </div>
+
+                <div class="input-group">
+                    <label>Email Address</label>
+                    <input type="email" id="nurseRegEmail" placeholder="Enter your email" required>
+                </div>
+
+                <div class="input-group">
+                    <label>Phone Number</label>
+                    <input type="tel" id="nursePhone" placeholder="Enter your phone number" required>
+                </div>
+
+                <div class="input-group">
+                    <label>Password</label>
+                    <input type="password" id="nurseRegPassword" placeholder="Create password" required>
+                </div>
+
+                <div class="input-group">
+                    <label>Confirm Password</label>
+                    <input type="password" id="nurseConfirmPassword" placeholder="Confirm password" required>
+                </div>
+
+                <button type="submit" id="regBtn">Complete Registration</button>
+            </form>
+
+            <p class="login-text">
+                Already have an account?
+                <a href="nurse-login.html">Login here</a>
+            </p>
+
+            <a href="Main-Dashboard.html" class="home-link">Back to Home</a>
+        </div>
+    </div>
+
+</div>
+
+<script>
+document.getElementById("nurseRegisterForm").addEventListener("submit", async function(event) {
+    event.preventDefault();
+
+    const name = document.getElementById("nurseName").value;
+    const email = document.getElementById("nurseRegEmail").value;
+    const phone = document.getElementById("nursePhone").value;
+    const password = document.getElementById("nurseRegPassword").value;
+    const confirmPassword = document.getElementById("nurseConfirmPassword").value;
+    const regBtn = document.getElementById("regBtn");
+
+    if (password !== confirmPassword) {
+        alert("Passwords do not match!");
+        return;
+    }
+
+    regBtn.disabled = true;
+    regBtn.innerText = "Registering...";
+
+    try {
+        const response = await fetch("http://localhost:5000/api/nurse/register", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name, email, phone, password })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            alert("Registration successful! Please login.");
+            window.location.href = "nurse-login.html";
+        } else {
+            alert(data.message || "Registration failed.");
+        }
+    } catch (error) {
+        console.error("Error during registration:", error);
+        alert("Server connection failed.");
+    } finally {
+        regBtn.disabled = false;
+        regBtn.innerText = "Complete Registration";
+    }
+});
+</script>
+
+</body>
+</html>

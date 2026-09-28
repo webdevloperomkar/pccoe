@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nurse Login - HealSure</title>
+    <link rel="stylesheet" href="nurse-login.css">
+</head>
+
+<body>
+
+<div class="login-page">
+
+    <!-- LEFT SIDE -->
+    <div class="left-section">
+        <div class="logo">
+            <span>+</span> HealSure
+            <small>Electronic Health Record System</small>
+        </div>
+
+        <div class="welcome">
+            <h1>Welcome,<br>Nurse</h1>
+            <p>Login securely to access patient information, monitor vital signs and manage your healthcare activities.</p>
+        </div>
+
+        <div class="bottom-text">
+            Trusted Care.<br>Through Technology.
+        </div>
+    </div>
+
+    <!-- RIGHT SIDE -->
+    <div class="right-section">
+        <div class="login-card">
+            <div class="card-icon">+</div>
+
+            <h2>Nurse Login</h2>
+            <p class="card-subtitle">Login to access your nurse account</p>
+
+            <form id="nurseLoginForm">
+                <div class="input-group">
+                    <label>Email Address</label>
+                    <input type="email" id="nurseEmail" placeholder="Enter your email" required>
+                </div>
+
+                <div class="input-group">
+                    <label>Password</label>
+                    <input type="password" id="nursePassword" placeholder="Enter your password" required>
+                </div>
+
+                <div class="forgot">
+                    <a href="#">Forgot Password?</a>
+                </div>
+
+                <button type="submit" id="loginBtn">Login</button>
+            </form>
+
+            <p class="register-text">
+                Don't have an account?
+                <a href="nurse-register.html">Register here</a>
+            </p>
+
+            <a href="Main-Dashboard.html" class="home-link">Back to Home</a>
+        </div>
+    </div>
+
+</div>
+
+<script>
+document.getElementById("nurseLoginForm").addEventListener("submit", async function(event) {
+    event.preventDefault();
+
+    const email = document.getElementById("nurseEmail").value;
+    const password = document.getElementById("nursePassword").value;
+    const loginBtn = document.getElementById("loginBtn");
+
+    loginBtn.disabled = true;
+    loginBtn.innerText = "Logging in...";
+
+    try {
+        const response = await fetch("http://localhost:5000/api/nurse/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, password })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            // Store nurse session info
+            localStorage.setItem("nurseToken", JSON.stringify(data.nurse));
+            alert("Login Successful!");
+            window.location.href = "nurse-dashboard.html";
+        } else {
+            alert(data.message || "Invalid credentials.");
+        }
+    } catch (error) {
+        console.error("Error during login:", error);
+        alert("Unable to connect to the server. Please ensure the backend is running.");
+    } finally {
+        loginBtn.disabled = false;
+        loginBtn.innerText = "Login";
+    }
+});
+</script>
+
+</body>
+</html>
