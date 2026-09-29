@@ -300,6 +300,35 @@
                 console.error("Error resolving alert:", err);
             }
         }
+        // Check Admin Authorization
+const adminSession = JSON.parse(localStorage.getItem('adminUser'));
+
+if (!adminSession || adminSession.role !== 'Admin') {
+    alert("Unauthorized access! Please login as an Admin.");
+    window.location.href = '/admin-login.html'; // Redirect to Admin Login page
+}
+
+async function fetchSecurityMetrics() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/admin/security-metrics`, {
+            headers: {
+                'x-user-role': 'Admin',
+                'x-user-id': adminSession ? adminSession.id : 0
+            }
+        });
+        const data = await response.json();
+        if (data.success) {
+            document.getElementById('totalLogs').innerText = data.metrics.totalLogs || 0;
+            document.getElementById('activeAlerts').innerText = data.metrics.activeAlerts || 0;
+            document.getElementById('deniedAccess').innerText = data.metrics.deniedAccess || 0;
+
+            renderAlertsTable(data.activeAlerts);
+            renderLogsTable(data.recentLogs);
+        }
+    } catch (err) {
+        console.error("Error fetching security metrics:", err);
+    }
+}
 
         // Auto-refresh every 3 seconds
         setInterval(fetchSecurityMetrics, 3000);

@@ -540,6 +540,54 @@ app.post('/api/nurse/book-appointment', async (req, res) => {
     }
 });
 
+// ==========================================
+// ADMIN AUTHENTICATION
+// ==========================================
+
+app.post('/api/admin/login', async (req, res) => {
+    const { username, password } = req.body;
+
+    // Replace with your preferred hardcoded admin credentials or DB query
+    const ADMIN_USER = "admin";
+    const ADMIN_PASS = "admin123"; 
+
+    if (username === ADMIN_USER && password === ADMIN_PASS) {
+        return res.json({
+            success: true,
+            admin: { id: 1, username: ADMIN_USER, role: 'Admin' }
+        });
+    } else {
+        return res.status(401).json({
+            success: false,
+            message: "Invalid admin credentials."
+        });
+    }
+});
+
+app.get('/api/admin/security-metrics', async (req, res) => {
+    const userRole = req.headers['x-user-role'];
+
+    // Block non-admin API requests
+    if (userRole !== 'Admin') {
+        return res.status(403).json({ success: false, message: "Forbidden: Admin access required." });
+    }
+
+    try {
+        const [logs] = await db.query('SELECT * FROM access_logs ORDER BY timestamp DESC LIMIT 30');
+        const [alerts] = await db.query('SELECT * FROM security_alerts WHERE status = "OPEN" ORDER BY created_at DESC');
+        const [counts] = await db.query(`
+            SELECT 
+                COUNT(*) as totalLogs,
+                SUM(CASE WHEN status = 'DENIED' THEN 1 ELSE 0 END) as deniedAccess,
+                (SELECT COUNT(*) FROM security_alerts WHERE status = 'OPEN') as activeAlerts
+            FROM access_logs
+        `);
+
+        res.json({ success: true, metrics: counts[0], recentLogs: logs, activeAlerts: alerts });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
 app.listen(5000, () => {
     console.log("🚀 Server running on port 5000");
 });
