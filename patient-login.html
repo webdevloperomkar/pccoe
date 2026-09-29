@@ -57,7 +57,48 @@
         </div>
     </div>
 
+<!-- AI ASSISTANT FLOATING WIDGET -->
+<div id="aiWidgetToggle" onclick="toggleAIChat()" style="position: fixed; bottom: 25px; right: 25px; background: #007bff; color: #fff; width: 60px; height: 60px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 1.8rem; cursor: pointer; box-shadow: 0 4px 15px rgba(0, 123, 255, 0.4); z-index: 1000;">
+    🤖
+</div>
+
+<div id="aiChatBox" style="display: none; position: fixed; bottom: 95px; right: 25px; width: 380px; height: 520px; background: #151c2c; border: 1px solid #2a3447; border-radius: 12px; box-shadow: 0 8px 25px rgba(0,0,0,0.5); z-index: 1000; flex-direction: column; overflow: hidden; font-family: sans-serif;">
+    <!-- Chat Header -->
+    <div style="background: #0b0f19; padding: 12px 16px; border-bottom: 1px solid #2a3447; color: #38bdf8; font-weight: bold; display: flex; justify-content: space-between; align-items: center;">
+        <span>🤖 Patient AI Assistant</span>
+        <span onclick="toggleAIChat()" style="cursor: pointer; color: #94a3b8; font-size: 1.2rem;">&times;</span>
+    </div>
+
+    <!-- Task Selector -->
+    <div style="padding: 10px; background: #1a2332; border-bottom: 1px solid #2a3447;">
+        <label style="color: #94a3b8; font-size: 0.75rem; display: block; margin-bottom: 4px;">Select AI Task:</label>
+        <select id="aiTaskSelect" style="width: 100%; padding: 6px; background: #0b0f19; color: #e2e8f0; border: 1px solid #2a3447; border-radius: 4px; font-size: 0.85rem;">
+            <option value="TRIAGE">🩺 Symptom Triage & Specialist Routing</option>
+            <option value="MEDICATION">💊 Prescription & Drug Safety</option>
+            <option value="POLICY">📜 Hospital Policy & Patient Rights</option>
+            <option value="TRANSLATE_TERMS">📝 Medical Term Translator</option>
+            <option value="SECURITY">🚨 Security & Threat Advisory</option>
+        </select>
+    </div>
+
+    <!-- Message Display Area -->
+    <div id="aiChatMessages" style="flex: 1; padding: 12px; overflow-y: auto; color: #e2e8f0; font-size: 0.85rem; display: flex; flex-direction: column; gap: 8px;">
+        <div style="background: #1e293b; padding: 8px 12px; border-radius: 8px; max-width: 85%;">
+            Welcome to HealSure! If you need help logging in or have pre-appointment questions, ask away.
+        </div>
+    </div>
+
+    <!-- Input Box -->
+    <div style="padding: 10px; background: #0b0f19; border-top: 1px solid #2a3447; display: flex; gap: 8px;">
+        <input type="text" id="aiUserInput" placeholder="Type your query..." style="flex: 1; padding: 8px; background: #151c2c; border: 1px solid #2a3447; border-radius: 4px; color: #fff; font-size: 0.85rem;" onkeypress="if(event.key==='Enter') sendAIMessage()">
+        <button onclick="sendAIMessage()" style="background: #38bdf8; border: none; padding: 8px 14px; border-radius: 4px; font-weight: bold; cursor: pointer; color: #000;">Send</button>
+    </div>
+</div>
+
 <script>
+// Dynamic Base URL Configuration
+const API_BASE_URL = window.location.port === '3000' ? 'http://localhost:5000' : '';
+
 document.getElementById("loginForm").addEventListener("submit", async function(event) {
     event.preventDefault();
 
@@ -65,7 +106,7 @@ document.getElementById("loginForm").addEventListener("submit", async function(e
     let password = document.getElementById("password").value;
 
     try {
-        const response = await fetch("http://localhost:5000/api/patient/login", {
+        const response = await fetch(`${API_BASE_URL}/api/patient/login`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ email, password })
@@ -89,6 +130,65 @@ document.getElementById("loginForm").addEventListener("submit", async function(e
         alert("Unable to connect to the server.");
     }
 });
+
+// AI Chat Widget Logic
+function toggleAIChat() {
+    const chatBox = document.getElementById('aiChatBox');
+    chatBox.style.display = chatBox.style.display === 'none' ? 'flex' : 'none';
+}
+
+async function sendAIMessage() {
+    const inputField = document.getElementById('aiUserInput');
+    const taskSelect = document.getElementById('aiTaskSelect');
+    const messagesContainer = document.getElementById('aiChatMessages');
+
+    const message = inputField.value.trim();
+    const task = taskSelect.value;
+
+    if (!message) return;
+
+    // Render User Message
+    messagesContainer.innerHTML += `
+        <div style="background: #0284c7; color: #fff; padding: 8px 12px; border-radius: 8px; max-width: 85%; align-self: flex-end;">
+            ${message}
+        </div>
+    `;
+
+    inputField.value = '';
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+    // Render Loading Placeholder
+    const loadingId = 'loading-' + Date.now();
+    messagesContainer.innerHTML += `
+        <div id="${loadingId}" style="background: #1e293b; padding: 8px 12px; border-radius: 8px; max-width: 85%;">
+            ⏳ Thinking...
+        </div>
+    `;
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+    try {
+        const res = await fetch(`${API_BASE_URL}/api/ai/assistant`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ task, message })
+        });
+
+        const data = await res.json();
+        const loadingElem = document.getElementById(loadingId);
+
+        if (res.ok && data.success) {
+            loadingElem.innerHTML = data.reply.replace(/\n/g, '<br>');
+        } else {
+            loadingElem.innerText = '❌ Failed to generate AI response.';
+        }
+    } catch (err) {
+        console.error(err);
+        const loadingElem = document.getElementById(loadingId);
+        if (loadingElem) loadingElem.innerText = '❌ Backend connection error.';
+    }
+
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+}
 </script>
 </body>
 </html>

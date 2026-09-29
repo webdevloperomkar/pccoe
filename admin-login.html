@@ -24,8 +24,11 @@ async function handleLogin() {
     const username = document.getElementById('username').value;
     const password = document.getElementById('password').value;
 
+    // Detect if running on local dev server (port 3000) vs production/backend
+    const BASE_URL = window.location.port === '3000' ? 'http://localhost:5000' : '';
+
     try {
-        const res = await fetch('http://localhost:5000/api/admin/login', {
+        const res = await fetch(`${BASE_URL}/api/admin/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username, password })
@@ -34,8 +37,7 @@ async function handleLogin() {
         const data = await res.json();
         if (data.success) {
             localStorage.setItem('adminUser', JSON.stringify(data.admin));
-            // Explicitly redirect to port 5000 backend route
-            window.location.href = 'http://localhost:5000/admin-security';
+            window.location.href = `${BASE_URL}/admin-security`;
         } else {
             alert(data.message);
         }

@@ -478,6 +478,9 @@
   </div>
 
 <script>
+// Dynamic Base URL
+const API_BASE_URL = window.location.port === '3000' ? 'http://localhost:5000' : '';
+
 // Check Doctor Session
 const doctorData = JSON.parse(localStorage.getItem("doctorToken"));
 
@@ -485,9 +488,9 @@ if (!doctorData) {
   alert("Session expired. Please log in.");
   window.location.href = "Doctor_login.html";
 } else {
-  document.getElementById("doctorName").innerText = doctorData.fullName;
-  document.getElementById("doctorLicense").innerText = "License No: " + doctorData.licenseNo;
-  document.getElementById("doctorSpec").innerText = doctorData.specialization;
+  document.getElementById("doctorName").innerText = doctorData.fullName || doctorData.name || "Doctor";
+  document.getElementById("doctorLicense").innerText = "License No: " + (doctorData.licenseNo || "N/A");
+  document.getElementById("doctorSpec").innerText = doctorData.specialization || "General";
 }
 
 // Track current view ('queue' or 'history')
@@ -518,11 +521,11 @@ navLinks[1].addEventListener('click', (e) => {
 async function loadQueue() {
   const queueContainer = document.getElementById("queueContainer");
   try {
-    const res = await fetch("http://localhost:5000/api/doctor/queue");
+    const res = await fetch(`${API_BASE_URL}/api/doctor/queue`);
     const data = await res.json();
     queueContainer.innerHTML = "";
 
-    if (!data.success || !data.appointments || data.appointments.length === 0) {
+    if (!res.ok || !data.success || !data.appointments || data.appointments.length === 0) {
       queueContainer.innerHTML = '<p style="text-align: center; color: var(--text-muted); padding-top: 20px;">No upcoming appointments.</p>';
       return;
     }
@@ -530,7 +533,7 @@ async function loadQueue() {
     data.appointments.forEach(app => {
       const card = document.createElement("div");
       card.className = "patient-card";
-      card.onclick = () => selectPatient(app);
+      card.onclick = (e) => selectPatient(app, e);
       
       card.innerHTML = `
         <div style="display: flex; align-items: center; gap: 14px;">
@@ -555,11 +558,11 @@ async function loadQueue() {
 async function loadHistory() {
   const queueContainer = document.getElementById("queueContainer");
   try {
-    const res = await fetch("http://localhost:5000/api/doctor/history");
+    const res = await fetch(`${API_BASE_URL}/api/doctor/history`);
     const data = await res.json();
     queueContainer.innerHTML = "";
 
-    if (!data.success || !data.appointments || data.appointments.length === 0) {
+    if (!res.ok || !data.success || !data.appointments || data.appointments.length === 0) {
       queueContainer.innerHTML = '<p style="text-align: center; color: var(--text-muted); padding-top: 20px;">No consultation history found.</p>';
       return;
     }
@@ -588,13 +591,15 @@ async function loadHistory() {
 }
 
 // Select Patient for Prescription
-function selectPatient(appointment) {
+function selectPatient(appointment, event) {
   document.getElementById("selectedAppointmentId").value = appointment.id;
   document.getElementById("patientNameInput").value = `#${appointment.token_number} - ${appointment.patient_name}`;
   
   // Highlight selected patient card
   document.querySelectorAll('.patient-card').forEach(card => card.classList.remove('selected'));
-  event.currentTarget.classList.add('selected');
+  if (event && event.currentTarget) {
+    event.currentTarget.classList.add('selected');
+  }
 }
 
 // Submit Prescription & Update Status
@@ -611,7 +616,7 @@ document.getElementById("consultationForm").addEventListener("submit", async fun
   }
 
   try {
-    const res = await fetch("http://localhost:5000/api/doctor/update-appointment", {
+    const res = await fetch(`${API_BASE_URL}/api/doctor/update-appointment`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ appointmentId, prescription, status })
@@ -619,7 +624,7 @@ document.getElementById("consultationForm").addEventListener("submit", async fun
 
     const data = await res.json();
 
-    if (data.success) {
+    if (res.ok && data.success) {
       alert("Consultation completed successfully!");
       document.getElementById("consultationForm").reset();
       document.getElementById("selectedAppointmentId").value = "";
@@ -628,7 +633,7 @@ document.getElementById("consultationForm").addEventListener("submit", async fun
       if (currentView === 'queue') loadQueue();
       else loadHistory();
     } else {
-      alert(data.message);
+      alert(data.message || "Failed to save consultation.");
     }
   } catch (err) {
     console.error("Update error:", err);

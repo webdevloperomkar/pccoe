@@ -120,6 +120,13 @@ app.use((req, res, next) => {
 // ==========================================
 
 app.get('/api/admin/security-metrics', async (req, res) => {
+    const userRole = req.headers['x-user-role'];
+
+    // Block non-admin API requests if specified
+    if (userRole && userRole !== 'Admin') {
+        return res.status(403).json({ success: false, message: "Forbidden: Admin access required." });
+    }
+
     try {
         const [logs] = await db.query('SELECT * FROM access_logs ORDER BY timestamp DESC LIMIT 30');
         const [alerts] = await db.query('SELECT * FROM security_alerts WHERE status = "OPEN" ORDER BY created_at DESC');
@@ -547,7 +554,6 @@ app.post('/api/nurse/book-appointment', async (req, res) => {
 app.post('/api/admin/login', async (req, res) => {
     const { username, password } = req.body;
 
-    // Replace with your preferred hardcoded admin credentials or DB query
     const ADMIN_USER = "admin";
     const ADMIN_PASS = "admin123"; 
 
@@ -564,30 +570,59 @@ app.post('/api/admin/login', async (req, res) => {
     }
 });
 
-app.get('/api/admin/security-metrics', async (req, res) => {
-    const userRole = req.headers['x-user-role'];
+// ==========================================
+// AI ASSISTANT ROUTE (Google Gen AI SDK)
+// ==========================================
+const { GoogleGenAI } = require('@google/genai');
 
-    // Block non-admin API requests
-    if (userRole !== 'Admin') {
-        return res.status(403).json({ success: false, message: "Forbidden: Admin access required." });
-    }
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || 'AQ.Ab8RN6JIO6SJbj_-Oxm4UPBd98RIJOnQCaelZhxJOcBjIr6Y0A' });
+
+app.post('/api/ai/assistant', async (req, res) => {
+    const { task, message } = req.body;
 
     try {
-        const [logs] = await db.query('SELECT * FROM access_logs ORDER BY timestamp DESC LIMIT 30');
-        const [alerts] = await db.query('SELECT * FROM security_alerts WHERE status = "OPEN" ORDER BY created_at DESC');
-        const [counts] = await db.query(`
-            SELECT 
-                COUNT(*) as totalLogs,
-                SUM(CASE WHEN status = 'DENIED' THEN 1 ELSE 0 END) as deniedAccess,
-                (SELECT COUNT(*) FROM security_alerts WHERE status = 'OPEN') as activeAlerts
-            FROM access_logs
-        `);
+        let systemPrompt = "You are a helpful AI Assistant for a Hospital Management and SOC Security Platform.";
 
-        res.json({ success: true, metrics: counts[0], recentLogs: logs, activeAlerts: alerts });
+        switch (task) {
+            case 'TRIAGE':
+                systemPrompt = "You are a Hospital Triage Specialist. Analyze user symptoms and suggest the appropriate department (e.g., Cardiology, General Medicine, Neurology) and severity level (Low, Medium, High, Emergency). Include a concise medical disclaimer.";
+                break;
+            case 'SECURITY':
+                systemPrompt = "You are a Cyber Security SOC Specialist. Analyze the provided query/incident and explain potential risks or recommended mitigation steps in simple terms.";
+                break;
+            case 'MEDICATION':
+                systemPrompt = "You are a Pharmacy Advisory Assistant. Explain medication uses, general safety considerations, and common interactions concisely.";
+                break;
+            case 'APPOINTMENT':
+                systemPrompt = "You are a Hospital Operations Assistant. Guide the user on how to prepare for tests, scans, or consultations.";
+                break;
+            case 'POLICY':
+                systemPrompt = "You are a Hospital Information Desk Assistant. Answer questions regarding hospital policies, visiting hours, and patient care procedures.";
+                break;
+            case 'TRANSLATE_TERMS':
+                systemPrompt = "You are a Medical Communicator. Translate complex medical jargon into easy-to-understand language for patients.";
+                break;
+            case 'METRICS_EXPLAINER':
+                systemPrompt = "You are a Security Systems Operations Analyst. Explain what various security metrics, audit log flags, and threat categories mean.";
+                break;
+            default:
+                systemPrompt = "You are an AI Copilot for the Hospital Management and Security Operations system.";
+        }
+
+        const response = await ai.models.generateContent({
+            model: 'gemini-2.5-flash',
+            contents: `${systemPrompt}\n\nUser Request: ${message}`
+        });
+
+        res.json({ success: true, reply: response.text });
     } catch (err) {
-        res.status(500).json({ success: false, message: err.message });
+        console.error("AI Error:", err);
+        res.status(500).json({ success: false, message: "AI Copilot unavailable." });
     }
 });
-app.listen(5000, () => {
-    console.log("🚀 Server running on port 5000");
+
+// Port configuration for Cloud Deployment
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+    console.log(`🚀 Server running on port ${PORT}`);
 });

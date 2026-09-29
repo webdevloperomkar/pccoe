@@ -79,6 +79,9 @@
   </div>
 
 <script>
+// Dynamic Base URL
+const API_BASE_URL = window.location.port === '3000' ? 'http://localhost:5000' : '';
+
 // Toggle Password Visibility
 const togglePassword = document.getElementById("togglePassword");
 const passwordInput = document.getElementById("doctorPassword");
@@ -97,7 +100,7 @@ document.getElementById("doctorLoginForm").addEventListener("submit", async func
     const password = document.getElementById("doctorPassword").value;
 
     try {
-        const response = await fetch("http://localhost:5000/api/doctor/login", {
+        const response = await fetch(`${API_BASE_URL}/api/doctor/login`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ email, password })
@@ -105,7 +108,7 @@ document.getElementById("doctorLoginForm").addEventListener("submit", async func
 
         const data = await response.json();
 
-        if (data.success) {
+        if (response.ok && data.success) {
             // Save doctor session data in localStorage
             localStorage.setItem("doctorToken", JSON.stringify(data.doctor));
             alert("Login Successful!");
@@ -113,11 +116,11 @@ document.getElementById("doctorLoginForm").addEventListener("submit", async func
             // Redirect to Doctor Dashboard
             window.location.href = "doctor-dashboard.html";
         } else {
-            alert(data.message);
+            alert(data.message || "Login failed. Please check your credentials.");
         }
     } catch (error) {
-        console.error("Error:", error);
-        alert("Server connection failed.");
+        console.error("Error during doctor login:", error);
+        alert("Server connection failed. Please try again later.");
     }
 });
 </script>

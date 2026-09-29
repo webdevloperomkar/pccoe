@@ -120,7 +120,7 @@
         </div>
 
         <div class="back-link-wrapper">
-          <a href="index.html" class="back-link">
+          <a href="Main-Dashboard.html" class="back-link">
             <i class="fa-solid fa-arrow-left"></i> Back to Home
           </a>
         </div>
@@ -129,6 +129,9 @@
   </div>
 
 <script>
+// Dynamic Base URL
+const API_BASE_URL = window.location.port === '3000' ? 'http://localhost:5000' : '';
+
 document.getElementById("doctorRegisterForm").addEventListener("submit", async function(e) {
     e.preventDefault();
 
@@ -140,13 +143,18 @@ document.getElementById("doctorRegisterForm").addEventListener("submit", async f
     const password = document.getElementById("password").value;
     const confirmPassword = document.getElementById("confirmPassword").value;
 
+    if (password.length < 6) {
+        alert("Password must be at least 6 characters long.");
+        return;
+    }
+
     if (password !== confirmPassword) {
         alert("Passwords do not match!");
         return;
     }
 
     try {
-        const response = await fetch("http://localhost:5000/api/doctor/register", {
+        const response = await fetch(`${API_BASE_URL}/api/doctor/register`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ fullName, licenseNo, specialization, email, phone, password })
@@ -154,15 +162,15 @@ document.getElementById("doctorRegisterForm").addEventListener("submit", async f
 
         const data = await response.json();
 
-        if (data.success) {
-            alert(data.message);
+        if (response.ok && data.success) {
+            alert(data.message || "Registration successful!");
             window.location.href = "Doctor_login.html";
         } else {
-            alert(data.message);
+            alert(data.message || "Registration failed. Please check your inputs.");
         }
     } catch (error) {
         console.error("Error:", error);
-        alert("Server connection failed.");
+        alert("Server connection failed. Please ensure backend is running.");
     }
 });
 </script>
