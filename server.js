@@ -575,7 +575,7 @@ app.post('/api/admin/login', async (req, res) => {
 // ==========================================
 const { GoogleGenAI } = require('@google/genai');
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || 'AQ.Ab8RN6JIO6SJbj_-Oxm4UPBd98RIJOnQCaelZhxJOcBjIr6Y0A' });
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || '' });
 
 app.post('/api/ai/assistant', async (req, res) => {
     const { task, message } = req.body;
