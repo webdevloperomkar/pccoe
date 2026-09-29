@@ -5,64 +5,178 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SOC Admin Security Dashboard</title>
     <style>
-        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { background-color: #0f172a; color: #f8fafc; margin: 0; padding: 20px; }
-        h1 { color: #38bdf8; font-size: 24px; margin-bottom: 20px; border-bottom: 2px solid #1e293b; padding-bottom: 10px; }
-        
-        /* Stats Grid */
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 25px; }
-        .card { background: #1e293b; padding: 18px; border-radius: 8px; border-left: 4px solid #38bdf8; }
-        .card.danger { border-left-color: #ef4444; }
-        .card.warning { border-left-color: #f59e0b; }
-        .card h3 { font-size: 13px; color: #94a3b8; text-transform: uppercase; margin: 0 0 8px 0; }
-        .card .number { font-size: 28px; font-weight: bold; }
+        :root {
+            --bg-color: #0b0f19;
+            --card-bg: #151c2c;
+            --border-color: #2a3447;
+            --text-primary: #e2e8f0;
+            --text-secondary: #94a3b8;
+            --accent-blue: #38bdf8;
+            --accent-red: #f87171;
+            --accent-green: #4ade80;
+            --accent-yellow: #facc15;
+        }
 
-        /* Tables & Layout */
-        .section-title { font-size: 18px; color: #f1f5f9; margin: 20px 0 10px 0; }
-        .table-container { background: #1e293b; border-radius: 8px; overflow-x: auto; margin-bottom: 30px; }
-        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 14px; }
-        th, td { padding: 12px 16px; border-bottom: 1px solid #334155; }
-        th { background-color: #0f172a; color: #94a3b8; font-weight: 600; }
-        tr:hover { background-color: #334155; }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
 
-        /* Badges */
-        .badge { padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; display: inline-block; }
-        .badge-CRITICAL { background: #7f1d1d; color: #fca5a5; }
-        .badge-HIGH { background: #991b1b; color: #fca5a5; }
-        .badge-MEDIUM { background: #78350f; color: #fde68a; }
-        .badge-LOW { background: #065f46; color: #a7f3d0; }
-        .badge-ALLOWED { background: #065f46; color: #a7f3d0; }
-        .badge-DENIED { background: #991b1b; color: #fca5a5; }
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            padding: 20px;
+        }
 
-        /* Buttons */
-        .btn { border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; margin-right: 4px; }
-        .btn-resolve { background: #10b981; color: white; }
-        .btn-dismiss { background: #64748b; color: white; }
-        .btn:hover { opacity: 0.85; }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            color: var(--accent-blue);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .metric-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            border-left: 4px solid var(--accent-blue);
+        }
+
+        .metric-card.alerts { border-left-color: var(--accent-red); }
+        .metric-card.denied { border-left-color: var(--accent-yellow); }
+
+        .metric-card h3 {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .metric-card .number {
+            font-size: 2rem;
+            font-weight: bold;
+        }
+
+        .section-title {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .table-container {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow-x: auto;
+            margin-bottom: 35px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.9rem;
+        }
+
+        th, td {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            background-color: rgba(255, 255, 255, 0.02);
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        .badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            display: inline-block;
+        }
+
+        .badge-CRITICAL { background-color: rgba(248, 113, 113, 0.2); color: var(--accent-red); }
+        .badge-HIGH { background-color: rgba(250, 204, 21, 0.2); color: var(--accent-yellow); }
+        .badge-MEDIUM { background-color: rgba(56, 189, 248, 0.2); color: var(--accent-blue); }
+        .badge-ALLOWED { background-color: rgba(74, 222, 128, 0.2); color: var(--accent-green); }
+        .badge-DENIED { background-color: rgba(248, 113, 113, 0.2); color: var(--accent-red); }
+
+        .btn-resolve {
+            background-color: transparent;
+            border: 1px solid var(--accent-green);
+            color: var(--accent-green);
+            padding: 4px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.2s;
+        }
+
+        .btn-resolve:hover {
+            background-color: var(--accent-green);
+            color: #000;
+        }
+
+        .empty-text {
+            text-align: center;
+            color: var(--text-secondary);
+            padding: 20px;
+        }
     </style>
 </head>
 <body>
 
-    <h1>🚨 Security Operations Center (SOC) Dashboard</h1>
+    <div class="header">
+        <h1>🚨 Security Operations Center (SOC) Dashboard</h1>
+    </div>
 
-    <!-- Metrics Header -->
-    <div class="stats-grid">
-        <div class="card">
+    <!-- METRICS OVERVIEW -->
+    <div class="metrics-grid">
+        <div class="metric-card">
             <h3>Total Audit Logs</h3>
-            <div class="number" id="metricTotalLogs">0</div>
+            <div class="number" id="totalLogs">0</div>
         </div>
-        <div class="card danger">
+        <div class="metric-card alerts">
             <h3>Active Security Alerts</h3>
-            <div class="number" id="metricActiveAlerts">0</div>
+            <div class="number" id="activeAlerts">0</div>
         </div>
-        <div class="card warning">
+        <div class="metric-card denied">
             <h3>Denied Access Attempts</h3>
-            <div class="number" id="metricDeniedAccess">0</div>
+            <div class="number" id="deniedAccess">0</div>
         </div>
     </div>
 
-    <!-- Active Security Alerts Section -->
-    <div class="section-title">⚠️ Flagged Threats & Security Alerts</div>
+    <!-- ACTIVE SECURITY ALERTS TABLE -->
+    <h2 class="section-title">⚠️ Flagged Threats & Security Alerts</h2>
     <div class="table-container">
         <table>
             <thead>
@@ -76,13 +190,13 @@
                 </tr>
             </thead>
             <tbody id="alertsTableBody">
-                <tr><td colspan="6" style="text-align:center;">Loading security alerts...</td></tr>
+                <tr><td colspan="6" class="empty-text">Loading security alerts...</td></tr>
             </tbody>
         </table>
     </div>
 
-    <!-- Live Access Logs Section -->
-    <div class="section-title">📋 Live System Access Audit Log (Recent 30)</div>
+    <!-- ACCESS LOGS TABLE -->
+    <h2 class="section-title">📜 Live System Access Audit Log (Recent 30)</h2>
     <div class="table-container">
         <table>
             <thead>
@@ -97,84 +211,101 @@
                 </tr>
             </thead>
             <tbody id="logsTableBody">
-                <tr><td colspan="7" style="text-align:center;">Loading audit logs...</td></tr>
+                <tr><td colspan="7" class="empty-text">Loading audit logs...</td></tr>
             </tbody>
         </table>
     </div>
 
     <script>
-        // Fetch dashboard metrics, alerts, and logs from server
-        async function fetchDashboardData() {
+        const API_BASE_URL = 'http://localhost:5000';
+
+        async function fetchSecurityMetrics() {
             try {
-                const response = await fetch('/api/admin/security-metrics');
+                const response = await fetch(`${API_BASE_URL}/api/admin/security-metrics`);
                 const data = await response.json();
 
-                if (!data.success) return;
+                if (data.success) {
+                    // Update Counters
+                    document.getElementById('totalLogs').innerText = data.metrics.totalLogs || 0;
+                    document.getElementById('activeAlerts').innerText = data.metrics.activeAlerts || 0;
+                    document.getElementById('deniedAccess').innerText = data.metrics.deniedAccess || 0;
 
-                // Update Metric Counters
-                document.getElementById('metricTotalLogs').innerText = data.metrics.totalLogs || 0;
-                document.getElementById('metricActiveAlerts').innerText = data.metrics.activeAlerts || 0;
-                document.getElementById('metricDeniedAccess').innerText = data.metrics.deniedAccess || 0;
+                    // Render Active Alerts Table
+                    renderAlertsTable(data.activeAlerts);
 
-                // Render Active Alerts Table
-                const alertsBody = document.getElementById('alertsTableBody');
-                if (data.activeAlerts.length === 0) {
-                    alertsBody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#10b981;">✅ No active threat alerts detected. All systems normal.</td></tr>`;
-                } else {
-                    alertsBody.innerHTML = data.activeAlerts.map(alert => `
-                        <tr>
-                            <td><strong>${alert.rule_name}</strong></td>
-                            <td><span class="badge badge-${alert.severity}">${alert.severity}</span></td>
-                            <td>User #${alert.user_id} (${alert.user_role})</td>
-                            <td>${alert.evidence_details}</td>
-                            <td>${new Date(alert.created_at).toLocaleString()}</td>
-                            <td>
-                                <button class="btn btn-resolve" onclick="updateAlertStatus(${alert.id}, 'RESOLVED')">Resolve</button>
-                                <button class="btn btn-dismiss" onclick="updateAlertStatus(${alert.id}, 'DISMISSED')">Dismiss</button>
-                            </td>
-                        </tr>
-                    `).join('');
+                    // Render Audit Logs Table
+                    renderLogsTable(data.recentLogs);
                 }
-
-                // Render Audit Logs Table
-                const logsBody = document.getElementById('logsTableBody');
-                logsBody.innerHTML = data.recentLogs.map(log => `
-                    <tr>
-                        <td>#${log.id}</td>
-                        <td>${log.user_id}</td>
-                        <td>${log.user_role}</td>
-                        <td><code>${log.action}</code></td>
-                        <td>${log.records_count}</td>
-                        <td><span class="badge badge-${log.status}">${log.status}</span></td>
-                        <td>${new Date(log.timestamp).toLocaleString()}</td>
-                    </tr>
-                `).join('');
-
             } catch (err) {
-                console.error("Dashboard Auto-Refresh Error:", err);
+                console.error("Error fetching security metrics:", err);
             }
         }
 
-        // Action function to resolve or dismiss alerts
-        async function updateAlertStatus(alertId, newStatus) {
+        function renderAlertsTable(alerts) {
+            const tbody = document.getElementById('alertsTableBody');
+            if (!alerts || alerts.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="empty-text">No active security alerts. All systems operational.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = alerts.map(alert => `
+                <tr>
+                    <td><strong>${alert.rule_name}</strong></td>
+                    <td><span class="badge badge-${alert.severity}">${alert.severity}</span></td>
+                    <td>User ID: ${alert.user_id} (${alert.user_role})</td>
+                    <td>${alert.evidence_details}</td>
+                    <td>${new Date(alert.created_at).toLocaleTimeString()}</td>
+                    <td>
+                        <button class="btn-resolve" onclick="resolveAlert(${alert.id}, 'RESOLVED')">Resolve</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function renderLogsTable(logs) {
+            const tbody = document.getElementById('logsTableBody');
+            if (!logs || logs.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="empty-text">No recent access logs found.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = logs.map(log => `
+                <tr>
+                    <td>#${log.id}</td>
+                    <td>${log.user_id}</td>
+                    <td>${log.user_role}</td>
+                    <td><code>${log.action}</code></td>
+                    <td>${log.records_count}</td>
+                    <td><span class="badge badge-${log.status}">${log.status}</span></td>
+                    <td>${new Date(log.timestamp).toLocaleString()}</td>
+                </tr>
+            `).join('');
+        }
+
+        async function resolveAlert(alertId, status) {
             try {
-                const response = await fetch('/api/admin/resolve-alert', {
+                const response = await fetch(`${API_BASE_URL}/api/admin/resolve-alert`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ alertId, status: newStatus })
+                    body: JSON.stringify({ alertId, status })
                 });
-                const res = await response.json();
-                if (res.success) {
-                    fetchDashboardData();
+
+                const result = await response.json();
+                if (result.success) {
+                    fetchSecurityMetrics();
+                } else {
+                    alert('Failed to update alert status.');
                 }
             } catch (err) {
-                alert("Error updating alert status");
+                console.error("Error resolving alert:", err);
             }
         }
 
-        // Initial Load and Auto-Refresh every 5 seconds
-        fetchDashboardData();
-        setInterval(fetchDashboardData, 5000);
+        // Auto-refresh every 3 seconds
+        setInterval(fetchSecurityMetrics, 3000);
+
+        // Initial Load
+        fetchSecurityMetrics();
     </script>
 </body>
 </html>

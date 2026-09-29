@@ -1,12 +1,8 @@
-// securityEngine.js
 const db = require('./db');
 
 const FAILED_LOGIN_THRESHOLD = 3;
 const MASS_RETRIEVAL_THRESHOLD = 20;
 
-/**
- * Creates a security alert record in the database
- */
 async function createAlert(ruleName, severity, userId, userRole, evidenceDetails) {
     try {
         await db.query(
@@ -20,13 +16,10 @@ async function createAlert(ruleName, severity, userId, userRole, evidenceDetails
     }
 }
 
-/**
- * Evaluates audit log entries against security threat patterns
- */
 async function evaluateSecurityRules(logEntry) {
     const { userId, userRole, action, status, recordsCount, isEmergencyOverride } = logEntry;
 
-    // PATTERN 1: Repeated Failed Logins (Within 5 minutes)
+    // RULE 1: Repeated Failed Logins
     if (action.includes('/login') && status === 'DENIED') {
         try {
             const [rows] = await db.query(
@@ -51,10 +44,10 @@ async function evaluateSecurityRules(logEntry) {
         }
     }
 
-    // PATTERN 2: Mass Record Retrieval / Data Leak Risk
+    // RULE 2: Mass Record Retrieval / Data Leak Risk
     if (recordsCount >= MASS_RETRIEVAL_THRESHOLD) {
         if (userRole === 'Doctor' && isEmergencyOverride) {
-            console.log(`[SECURITY NOTICE] Rapid access by Doctor ID ${userId} verified as legitimate ER Emergency Burst.`);
+            console.log(`[SECURITY NOTICE] Rapid access by Doctor ID ${userId} verified as ER Emergency Burst.`);
             return;
         }
 
@@ -67,7 +60,7 @@ async function evaluateSecurityRules(logEntry) {
         );
     }
 
-    // PATTERN 3: Unauthorized Access Attempt
+    // RULE 3: Unauthorized Access Attempt
     if (status === 'DENIED' && !action.includes('/login')) {
         await createAlert(
             'UNAUTHORIZED_SCOPE_ACCESS',

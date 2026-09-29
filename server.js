@@ -3,11 +3,15 @@ const mysql = require('mysql2/promise');
 const bcrypt = require('bcrypt');
 const cors = require('cors');
 const rateLimit = require('express-rate-limit');
+const path = require('path');
 const { evaluateSecurityRules } = require('./securityEngine');
 
 const app = express();
 app.use(cors());
 app.use(express.json());
+
+// Serve static files from root directory
+app.use(express.static(__dirname));
 
 const db = require('./db');
 
@@ -21,6 +25,11 @@ const db = require('./db');
         console.error('❌ Database connection error:', err.message);
     }
 })();
+
+// Explicit route for Admin SOC Dashboard
+app.get('/admin-security', (req, res) => {
+    res.sendFile(path.join(__dirname, 'admin-security.html'));
+});
 
 // ==========================================
 // 2. RATE LIMITERS
@@ -57,23 +66,19 @@ const doctorLoginLimiter = rateLimit({
 });
 
 // ==========================================
-// 3. PATIENT ROUTES
+// Global Audit Middleware
 // ==========================================
 
-// Global Audit Middleware - Logs requests and runs threat checks
-// Global Audit Middleware - Safe against empty bodies
 app.use((req, res, next) => {
     const originalJson = res.json;
 
-    // Intercept response data to inspect payload size and status
     res.json = function (data) {
         res.locals.body = data;
         return originalJson.apply(res, arguments);
     };
 
     res.on('finish', async () => {
-        // Skip logging admin monitoring requests to avoid infinite log loops
-        if (req.path.startsWith('/api/admin/security')) return;
+        if (req.path.startsWith('/api/admin/security') || req.path.includes('admin-security')) return;
 
         const userId = req.body?.userId || req.query?.userId || 0;
         const userRole = req.body?.userRole || req.headers?.['x-user-role'] || 'Guest';
@@ -95,15 +100,13 @@ app.use((req, res, next) => {
         };
 
         try {
-            // 1. Save access log to database
             await db.query(
                 `INSERT INTO access_logs (user_id, user_role, action, resource_type, records_count, status) 
                  VALUES (?, ?, ?, ?, ?, ?)`,
                 [userId, userRole, action, logEntry.resourceType, recordsCount, status]
             );
 
-            // 2. Evaluate log against security detection rules
-            evaluateSecurityRules(logEntry);
+            await evaluateSecurityRules(logEntry);
         } catch (err) {
             console.error("Audit Logging Error:", err.message);
         }
@@ -112,9 +115,10 @@ app.use((req, res, next) => {
     next();
 });
 
-// --- ADMIN SECURITY DASHBOARD ENDPOINTS ---
+// ==========================================
+// ADMIN SECURITY DASHBOARD ENDPOINTS
+// ==========================================
 
-// Fetch metrics, open alerts, and recent logs
 app.get('/api/admin/security-metrics', async (req, res) => {
     try {
         const [logs] = await db.query('SELECT * FROM access_logs ORDER BY timestamp DESC LIMIT 30');
@@ -133,7 +137,6 @@ app.get('/api/admin/security-metrics', async (req, res) => {
     }
 });
 
-// Endpoint to update alert status (Resolve or Dismiss)
 app.post('/api/admin/resolve-alert', async (req, res) => {
     const { alertId, status } = req.body;
     try {
@@ -143,7 +146,11 @@ app.post('/api/admin/resolve-alert', async (req, res) => {
         res.status(500).json({ success: false, message: err.message });
     }
 });
-// Route 1: Patient Registration
+
+// ==========================================
+// PATIENT ROUTES
+// ==========================================
+
 app.post('/api/patient/register', registerLimiter, async (req, res) => {
     const { email, password } = req.body;
 
@@ -167,7 +174,6 @@ app.post('/api/patient/register', registerLimiter, async (req, res) => {
     }
 });
 
-// Route 2: Patient Login
 app.post('/api/patient/login', loginLimiter, async (req, res) => {
     const { email, password } = req.body;
 
@@ -192,10 +198,7 @@ app.post('/api/patient/login', loginLimiter, async (req, res) => {
         res.status(200).json({ 
             success: true, 
             message: "Login successful!",
-            patient: {
-                id: patient.id,
-                email: patient.email
-            }
+            patient: { id: patient.id, email: patient.email }
         });
     } catch (error) {
         console.error("Login Error:", error);
@@ -203,7 +206,6 @@ app.post('/api/patient/login', loginLimiter, async (req, res) => {
     }
 });
 
-// Route 3: Fetch Patient Profile & Appointments
 app.get('/api/patient/dashboard/:patientId', async (req, res) => {
     const { patientId } = req.params;
 
@@ -233,7 +235,6 @@ app.get('/api/patient/dashboard/:patientId', async (req, res) => {
     }
 });
 
-// Route 4: Book New Appointment
 app.post('/api/patient/book-appointment', appointmentLimiter, async (req, res) => {
     const { patientId, name, age, gender, bloodGroup, symptoms } = req.body;
 
@@ -250,7 +251,7 @@ app.post('/api/patient/book-appointment', appointmentLimiter, async (req, res) =
         if (existingUpcoming.length > 0) {
             return res.status(400).json({
                 success: false,
-                message: "You already have an active upcoming appointment. Please wait until your consultation is completed before booking another."
+                message: "You already have an active upcoming appointment."
             });
         }
 
@@ -281,7 +282,7 @@ app.post('/api/patient/book-appointment', appointmentLimiter, async (req, res) =
 });
 
 // ==========================================
-// 4. DOCTOR ROUTES
+// DOCTOR ROUTES
 // ==========================================
 
 app.post('/api/doctor/register', doctorRegisterLimiter, async (req, res) => {
@@ -398,7 +399,7 @@ app.get('/api/doctor/history', async (req, res) => {
 });
 
 // ==========================================
-// 5. NURSE ROUTES
+// NURSE ROUTES
 // ==========================================
 
 app.post('/api/nurse/register', registerLimiter, async (req, res) => {
@@ -421,7 +422,6 @@ app.post('/api/nurse/register', registerLimiter, async (req, res) => {
             [name, email, phone, hashedPassword]
         );
 
-        console.log(`[DB SUCCESS] Nurse registered: ${email}`);
         return res.json({ success: true, message: "Nurse account created successfully!" });
     } catch (error) {
         console.error("Error registering nurse:", error); 
@@ -448,7 +448,6 @@ app.post('/api/nurse/login', loginLimiter, async (req, res) => {
             return res.status(401).json({ success: false, message: "Invalid email or password." });
         }
 
-        console.log(`[DB LOGIN] Nurse logged in: ${nurse.email}`);
         return res.json({
             success: true,
             nurse: { id: nurse.id, name: nurse.name, email: nurse.email }
@@ -461,36 +460,14 @@ app.post('/api/nurse/login', loginLimiter, async (req, res) => {
 
 app.get('/api/nurse/dashboard/:nurseId', async (req, res) => {
     try {
-        // 1. Fetch Today's Patients
         const [todayPatients] = await db.query(`
-            SELECT 
-                a.id AS appointment_id,
-                a.token_number,
-                a.status,
-                a.created_at,
-                a.patient_name AS name,
-                a.age,
-                a.gender,
-                a.symptoms
-            FROM appointments a
-            WHERE DATE(a.created_at) = CURDATE()
-            ORDER BY a.token_number ASC
+            SELECT a.id AS appointment_id, a.token_number, a.status, a.created_at, a.patient_name AS name, a.age, a.gender, a.symptoms
+            FROM appointments a WHERE DATE(a.created_at) = CURDATE() ORDER BY a.token_number ASC
         `);
 
-        // 2. Fetch ALL Upcoming Patients (regardless of creation date)
         const [upcomingPatients] = await db.query(`
-            SELECT 
-                a.id AS appointment_id,
-                a.token_number,
-                a.status,
-                a.created_at,
-                a.patient_name AS name,
-                a.age,
-                a.gender,
-                a.symptoms
-            FROM appointments a
-            WHERE a.status = 'Upcoming'
-            ORDER BY a.created_at ASC
+            SELECT a.id AS appointment_id, a.token_number, a.status, a.created_at, a.patient_name AS name, a.age, a.gender, a.symptoms
+            FROM appointments a WHERE a.status = 'Upcoming' ORDER BY a.created_at ASC
         `);
 
         return res.json({
@@ -498,8 +475,8 @@ app.get('/api/nurse/dashboard/:nurseId', async (req, res) => {
             assignedPatientsCount: todayPatients.length,
             vitalsCount: todayPatients.length,
             appointmentsCount: upcomingPatients.length,
-            todayPatients: todayPatients,
-            upcomingPatients: upcomingPatients
+            todayPatients,
+            upcomingPatients
         });
     } catch (error) {
         console.error("Error fetching nurse dashboard data from DB:", error);
@@ -507,9 +484,6 @@ app.get('/api/nurse/dashboard/:nurseId', async (req, res) => {
     }
 });
 
-// ==========================================
-// NURSE FEATURE 1: LOG PATIENT VITALS
-// ==========================================
 app.post('/api/nurse/vitals', async (req, res) => {
     const { patientId, nurseId, temperature, bloodPressure, pulseRate, sp02 } = req.body;
 
@@ -519,8 +493,7 @@ app.post('/api/nurse/vitals', async (req, res) => {
 
     try {
         await db.query(
-            `INSERT INTO patient_vitals (patient_id, nurse_id, temperature, blood_pressure, pulse_rate, sp02) 
-             VALUES (?, ?, ?, ?, ?, ?)`,
+            `INSERT INTO patient_vitals (patient_id, nurse_id, temperature, blood_pressure, pulse_rate, sp02) VALUES (?, ?, ?, ?, ?, ?)`,
             [patientId, nurseId, temperature, bloodPressure, pulseRate, sp02]
         );
 
@@ -531,7 +504,6 @@ app.post('/api/nurse/vitals', async (req, res) => {
     }
 });
 
-// Fetch patients for selection dropdowns
 app.get('/api/nurse/patients-list', async (req, res) => {
     try {
         const [patients] = await db.query('SELECT id, name, email FROM patients ORDER BY name ASC');
@@ -541,9 +513,6 @@ app.get('/api/nurse/patients-list', async (req, res) => {
     }
 });
 
-// ==========================================
-// NURSE FEATURE 2: BOOK APPOINTMENT FOR PATIENT
-// ==========================================
 app.post('/api/nurse/book-appointment', async (req, res) => {
     const { patientId, name, age, gender, bloodGroup, symptoms } = req.body;
 
@@ -552,10 +521,7 @@ app.post('/api/nurse/book-appointment', async (req, res) => {
     }
 
     try {
-        // Generate Token Number for today
-        const [countRow] = await db.query(
-            'SELECT COUNT(*) as count FROM appointments WHERE DATE(created_at) = CURDATE()'
-        );
+        const [countRow] = await db.query('SELECT COUNT(*) as count FROM appointments WHERE DATE(created_at) = CURDATE()');
         const tokenNumber = countRow[0].count + 1;
 
         await db.query(
@@ -573,6 +539,7 @@ app.post('/api/nurse/book-appointment', async (req, res) => {
         res.status(500).json({ success: false, message: `Server error: ${error.message}` });
     }
 });
+
 app.listen(5000, () => {
-    console.log("Server running on port 5000");
+    console.log("🚀 Server running on port 5000");
 });
